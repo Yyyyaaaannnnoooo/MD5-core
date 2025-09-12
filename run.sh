@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Launch the Node.js server in the background
-node "/Users/ya/Documents/__younger_sibling/md5-core/supercollider-static-web/server/index.js" &
+node "server/index.js" &
 
 # Get the PID of the server process
 SERVER_PID=$!
