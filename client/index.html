@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MD5-core</title>
+  <!-- <script src="strudel-local.js"></script> -->
+  <!-- <script src="index.js" defer></script> -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <section class="container">
+    <div contenteditable="true" class="text">Type in here!</div>
+    <div class="hash"></div>
+  </section>
+  
+  <div class="container-midi">
+    <div class="midi-status">
+      <div>MIDI status</div>
+
+      <div class="status disconnected" id="status">
+        MIDI access not yet requested
+      </div>
+
+      <button id="requestButton">Request MIDI Access</button>
+      <button id="panic">PANIC MODE</button>
+
+
+    </div>
+    <div class="midi-status">
+      <div>Connected MIDI Devices</div>
+      <ul id="devicesList"></ul>
+
+    </div>
+    <div id="midiInfo" class="midi-status" style="display: none;">
+
+
+      <div>MIDI Messages</div>
+      <div class="midi-data" id="midiMessages">
+        <p>No messages received yet...</p>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="lib/socket.io.min.js"></script>
+  <script src="index.js" defer></script>
+  <script src="midi-config.js" defer></script>
+</body>
+
+</html>

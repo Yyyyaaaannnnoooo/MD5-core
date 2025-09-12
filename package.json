@@ -1,0 +1,22 @@
+{
+  "name": "md5-core",
+  "version": "1.0.0",
+  "description": "md5 pattern generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "md5",
+    "core"
+  ],
+  "author": "YANO",
+  "license": "ISC",
+  "dependencies": {
+    "@strudel/midi": "^1.2.3",
+    "@strudel/web": "^1.2.3",
+    "express": "^5.1.0",
+    "osc": "^2.4.5",
+    "socket.io": "^4.8.1"
+  }
+}
