@@ -2,10 +2,11 @@
 
 MD5 Core is Pico Live Coding environment using the MD5 hashing algorithm. [Developed for the Hack the Promise Festival](https://hackthepromise.org/festival-2025/programm/)
 
-[Short Video Explanation](https://youtu.be/TZOxIBP_L-o)
 
 
 This work explores the history and cryptographic *__retirement__* of the MD5 algorithm. It creates poetic farewell to the MD5 hashing function by transforming text inputs into musical requiems.
+
+> [Short Video Explanation](https://youtu.be/TZOxIBP_L-o)
 
 ### The Story of MD5
 
