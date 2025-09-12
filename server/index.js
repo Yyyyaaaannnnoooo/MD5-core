@@ -21,22 +21,20 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  console.log('CONNECTION');
   socket.on("msg", msg => {
     console.log(msg);
     make_md5_hash(msg)
   })
   socket.on("panic", msg => {
     console.log(msg);
-    // make_md5_hash(msg)
     send_panic()
   })
 });
 
 
-
 server.listen(3000, () => {
-  console.log('server running at https://localhost:3000');
+  console.log('server running at http://localhost:3000');
 });
 
 const osc = require("osc")
@@ -76,7 +74,7 @@ udpPort.open();
 
 // // When the port is read, send an OSC message to, say, SuperCollider
 udpPort.on("ready", function () {
-  console.log("port ready");
+  console.log("Connected with SuperCollider");
 });
 
 
