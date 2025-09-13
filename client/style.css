@@ -5,6 +5,12 @@
   font-style: normal;
 }
 
+* {
+  box-sizing: border-box;
+
+  scrollbar-width: none;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -18,25 +24,42 @@ body {
   top: 0px;
   left: 0px;
   width: 100%;
-  height: calc(100vh - 200px);
+  height: 100vh;
   /* background-color: #777; */
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center ;
+}
 
+.centered{
+  display: flex;
+  flex-direction: column;
+  width: 700px;
+  height: 100vh;
+  background-color: #00000022;
+  border: solid 2px #afa;
+}
+
+.container-text{
+  display: flex;
+  flex-direction: row;
 }
 
 .text,
 .hash {
   border: solid 2px #afa;
-  width: 48%;
+  width: 100%;
   margin: 1rem;
-  /* height: calc(100vh - 100px); */
+  /* height: max-content; */
+  height: calc(100vh - 180px - 4rem);
   padding: 1rem;
-  background-color: black;
+  background-color: #00000022;
   overflow-y: scroll;
+  backdrop-filter: blur(1.5px);
 }
 
-.text{
+.text {
   transition: background-color 0.3s;
 }
 
@@ -44,12 +67,13 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  box-shadow: #777 0px 0px 3px;
+  z-index: -1;
+  /* box-shadow: #777 0px 0px 3px; */
 }
 
 .block-audio {
   z-index: 9999999999;
-  position: fixed;
+  position: absolute;
   left: 0;
   top: 0;
   width: 100%;
@@ -74,25 +98,44 @@ body {
   text-align: center;
 }
 
+.viz {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  /* border: solid 2px #afa; */
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+  overflow-y: scroll;
+  /* text-overflow: ; */
+  word-break: break-all;
+}
+
 /* FROM DEEPSEEK */
 
-.container-midi{
-  position: fixed;
+.container-midi {
+  /* position: fixed; */
   z-index: 10;
   display: flex;
   flex-direction: row;
-  top: calc(100vh - 200px);
-  left: 0;
-  width: 95%;
+  /* top: calc(100vh - 200px); */
+  /* left: 0; */
+  /* width: 100%; */
   height: 180px;
-  margin: 0.5rem;
+  justify-content: space-around;
+  margin: 1rem;
   border: 2px solid #afa;
-  padding: 0.5rem;
+  padding: 1rem;
+  background-color: #00000022;
+  backdrop-filter: blur(1.5px);
 }
 
-.midi-status{
+.midi-status {
   display: flex;
   flex-direction: column;
+  width: 50%;
+  padding: 0.25rem;
+  /* background-color: #03dac6; */
 }
 
 h1 {
@@ -101,10 +144,10 @@ h1 {
 }
 
 /* .status { */
-  /* padding: 15px; */
-  /* border-radius: 5px; */
-  /* margin: 15px 0; */
-  /* background-color: #3d3d3d; */
+/* padding: 15px; */
+/* border-radius: 5px; */
+/* margin: 15px 0; */
+/* background-color: #3d3d3d; */
 /* } */
 
 .connected {
@@ -161,6 +204,6 @@ button:disabled {
   color: #03dac6;
 }
 
-#panic{
+#panic {
   background-color: #f33;
 }

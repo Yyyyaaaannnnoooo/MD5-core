@@ -53,8 +53,11 @@ const udpPort = new osc.UDPPort({
 udpPort.on("message", function (oscMsg, timeTag, info) {
   console.log("An OSC message just arrived!", oscMsg);
   if (oscMsg["address"] === "/play") {
-    io.emit("play", "playing");
-  } else {
+    io.emit("play", oscMsg["args"][0]["value"]);
+  }else if(oscMsg["address"] === "/composition"){
+    io.emit("composition", oscMsg["args"][0]["value"])
+  } 
+  else {
 
     const value = oscMsg["args"][0]["value"];
     const midi_ch = oscMsg["args"][1]["value"];

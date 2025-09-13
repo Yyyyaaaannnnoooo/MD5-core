@@ -1,4 +1,16 @@
-// All Deepseek stuff.....
+// from https://gistlib.com/javascript/map-pitch-to-note-in-javascript
+function midi_to_note(midiNote) {
+  const noteMapping = [
+    'C', 'C#', 'D', 'D#', 'E', 'F',
+    'F#', 'G', 'G#', 'A', 'A#', 'B'
+  ];
+  const octave = Math.floor(midiNote / 12) - 1;
+  const noteIndex = midiNote % 12;
+  
+  return noteMapping[noteIndex] + octave.toString();
+}
+
+// below here mostly AI generated
 document.addEventListener('DOMContentLoaded', function () {
   const statusElement = document.getElementById('status');
   const requestButton = document.getElementById('requestButton');
@@ -84,17 +96,26 @@ document.addEventListener('DOMContentLoaded', function () {
     let messageText = '';
 
     // Parse MIDI message
+    let root = 0
+    let note_color = "#7f7" 
+    let prepend = "////////////" 
     const command = data[0] >> 4;
     const channel = data[0] & 0x0f;
-    const note = data[1];
+    if(channel === 1){root = 12; note_color = "#7fa"; prepend = ">>>>>>>>>>>>"}
+    if(channel === 2){root = -24; note_color = "#afa"; prepend = "************"}
+    const note = data[1] + root;
     const velocity = data[2];
 
     if (command === 0x09 && velocity > 0) {
       // Note on
-      messageText = `Note On: Channel ${channel + 1}, Note ${note}, Velocity ${velocity}`;
+      messageText = `<span style="color: ${note_color}">Note On: Channel ${channel + 1}, Note ${midi_to_note(note)}, Velocity ${velocity}</span>`;
+
+      display_composition(messageText, false)
+      
     } else if (command === 0x08 || (command === 0x09 && velocity === 0)) {
       // Note off
-      messageText = `Note Off: Channel ${channel + 1}, Note ${note}`;
+      messageText = `<span style="color: ${note_color}">Note Off: Channel ${channel + 1}, Note ${midi_to_note(note)}</span>`;
+      display_composition(messageText, false)
     } else if (command === 0x0B) {
       // Control change
       messageText = `Control Change: Channel ${channel + 1}, Controller ${note}, Value ${velocity}`;
@@ -103,22 +124,22 @@ document.addEventListener('DOMContentLoaded', function () {
       messageText = `Message: [${data[0]}, ${data[1]}, ${data[2]}]`;
     }
 
-    // Add to message log
-    if (midiMessages.querySelector('p')) {
-      midiMessages.innerHTML = '';
-    }
+    // // Add to message log
+    // if (midiMessages.querySelector('p')) {
+    //   midiMessages.innerHTML = '';
+    // }
 
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message';
+    // const messageElement = document.createElement('div');
+    // messageElement.className = 'message';
 
-    if (command === 0x09 && velocity > 0) {
-      messageElement.innerHTML = `<span class="note">${messageText}</span>`;
-    } else if (command === 0x0B) {
-      messageElement.innerHTML = `<span class="control">${messageText}</span>`;
-    } else {
-      messageElement.textContent = messageText;
-    }
+    // if (command === 0x09 && velocity > 0) {
+    //   messageElement.innerHTML = `<span class="note">${messageText}</span>`;
+    // } else if (command === 0x0B) {
+    //   messageElement.innerHTML = `<span class="control">${messageText}</span>`;
+    // } else {
+    //   messageElement.textContent = messageText;
+    // }
 
-    midiMessages.prepend(messageElement);
+    // midiMessages.prepend(messageElement);
   }
 });

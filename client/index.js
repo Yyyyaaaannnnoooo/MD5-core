@@ -11,7 +11,7 @@ const hash = document.querySelector(".hash")
 
 function highlight_bg() {
   text.style.backgroundColor = "#ccc"
-  setTimeout(() => { text.style.backgroundColor = "#000" }, 100)
+  setTimeout(() => { text.style.backgroundColor = "#00000022" }, 100)
 }
 
 
@@ -120,7 +120,42 @@ socket.on("play", (msg) => {
     hash_txt += item + "<br>"
   })
   hash.innerHTML = hash_txt
+  // update_render_text(hash_txt)
 });
+
+const composition = document.querySelector(".viz");
+let composition_txt = "";
+socket.on("composition", (msg) => {
+  display_composition(msg)
+  // const list = JSON.parse(msg);
+  // console.log(list);
+  // clearInterval(wait_interval)
+  // reset_display_hashing()
+  // console.log(msg);
+  // let hash_txt = ""
+  // hash_msgs.forEach(item => {
+  //   hash_txt += item + "<br>"
+  // })
+  // hash.innerHTML = hash_txt
+  // update_render_text(hash_txt)
+});
+
+function display_composition(msg, inline=true) {
+  const maxLength = 15000;
+  // console.log(msg);
+  if(inline){
+    composition_txt += msg + "<br>"
+  }else{
+    composition_txt += msg + " >>>>>>>>>>>> ";
+  }
+  // console.log(composition_txt.length)
+  if (composition_txt.length > maxLength) {
+    // console.log("MAX LENGTH REACHED!");
+    composition_txt = composition_txt.substring(parseInt(maxLength * 0.5), maxLength);
+  }
+  composition.innerHTML = composition_txt;
+  composition.scrollTop = composition.scrollHeight;
+}
 
 socket.on("md5-part", (msg) => {
   console.log(msg);
@@ -129,3 +164,5 @@ socket.on("md5-part", (msg) => {
   // hash.innerHTML += msg + "<br>"
   // hash_msgs.push(msg);
 });
+
+

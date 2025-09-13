@@ -10,7 +10,7 @@ m = MIDIOut(0);
 ~remote = NetAddr("127.0.0.1", 57121);
 )
 
-
+"sh /Users/ya/Documents/__younger_sibling/md5-core/supercollider-static-web/run.sh".runInTerminal(shell: "/bin/zsh")
 
 (
 
@@ -34,13 +34,18 @@ m = MIDIOut(0);
 
 ~getmd5 = {
   arg txt;
-  // ~tresh = tresh;
   ~remote.sendMsg("/get", txt);
 };
 
 ~emit = {
   arg txt;
   ~remote.sendMsg("/play", txt);
+};
+
+~emit_composition = {
+  arg txt;
+  txt.postln;
+  ~remote.sendMsg("/composition", txt);
 };
 
 
@@ -111,6 +116,8 @@ d = Dictionary.newFrom([
   ]
 ];
 
+~chord_names = ["Kyrie V1", "Kyrie V2", "Dies Irae V1", "Dies Irae V2", "Sanctus V1", "Sanctus V2", "Lux Aeterna"];
+
 
 
 ~convert = {
@@ -134,8 +141,8 @@ d = Dictionary.newFrom([
 
 ~play = {
   arg mutes;
-  "play".postln;
-  mutes.postln;
+  // "play".postln;
+  // mutes.postln;
   // x o o
   // o x o
   // o o x
@@ -145,7 +152,7 @@ d = Dictionary.newFrom([
   switch(
     mutes,
     0, {
-      "play strings".postln;
+      // "play strings".postln;
       ~strings.do({arg item; item.play})
     },
     1, {
@@ -223,14 +230,20 @@ d = Dictionary.newFrom([
   var off2 = list[(9..11)].linlin(0,15,0,0.25);
   var off3 = list[(12..14)].linlin(0,15,0.15,0.75);
   var score, trigs;
-  "melody".postln;
-  melody.postln;
+  var chord = ~chord_names[melody];
+  chord.postln;
+  // "melody".postln;
+  // melody.postln;
+  // ~notes[melody].postln;
   // durs = dura!2;
   20.do({
     arg item, i;
     var dur = durs.choose;
     var n = ~notes[melody].choose;
-
+    // n.postln;
+    // n[0].postln;
+    // n[1].postln;
+    // n[2].postln;
     t1 = t1.add(~mRest.(off1[0]));
     // n1 = n1.add((~convert.(n[0]) + 60 + root));
     n1 = n1.add((~convert.(n[0]) + 60));
@@ -248,6 +261,23 @@ d = Dictionary.newFrom([
     t2 = t2.add(~mRest.(off3[1]));
     t3 = t3.add(~mRest.(off3[2]));
   });
+  n1.postln;
+  n2.postln;
+  n3.postln;
+  fork{
+    ~emit_composition.(n1.asString());
+    0.5.wait;
+    ~emit_composition.(n2.asString());
+    0.5.wait;
+    ~emit_composition.(n3.asString());
+    0.5.wait;
+    ~emit_composition.(t1.asString());
+    0.5.wait;
+    ~emit_composition.(t2.asString());
+    0.5.wait;
+    ~emit_composition.(t3.asString());
+
+  };
   score = [n1, n2, n3];
   trigs = [t1, t2, t3];
   [score, trigs];
@@ -263,7 +293,7 @@ d = Dictionary.newFrom([
 ~longer = {
   arg number, trigs;
   trigs = trigs * number;
-  trigs.postln;
+  // trigs.postln;
   trigs;
 };
 
@@ -308,7 +338,6 @@ d = Dictionary.newFrom([
   var long2 = list[22].linexp(0, 15, 1,4).floor.asInteger;
   var long3 = list[23].linexp(0, 15, 1,4).floor.asInteger;
 
-
   // if(arp1 == bend && arp2 == bend, arp2 = 0);
 
   // from 15 onwards to make following changes
@@ -334,14 +363,16 @@ d = Dictionary.newFrom([
   ~bass    = ~make_ptn.(2, ~score3, ~trigs3, list.rotate(4));
 
   fork{
+
     ~stop.();
     3.wait;
-    "play synths".postln;
+    "~~~ Execute Composition ~~~".postln;
     // choose which instrument does arpeggio
     // Remove arpeggio on violin
     // m.control(0, 1, arp1);
     m.control(1, 1, arp2);
-    ~emit.("synths are playing");
+    ~emit.("~~~ Composition is Playng ~~~");
+    // ~emit_composition.(~score1.asString());
     ~play.(mutes);
   };
 };
@@ -357,8 +388,10 @@ OSCdef(
     arg msg, time, addr, recvPort;
     var ch = 0;
     msg.postln;
-    msg.removeAt(0).postln;
+    msg.removeAt(0);
     // ch = msg.removeAt(0).postln;
+
+    "~~~ New Composition ~~~".postln;
     ~make_scores.(msg, 5)
   },
   path: '/md5');
@@ -368,11 +401,11 @@ OSCdef(
   func: {
     arg msg, time, addr, recvPort;
     var ch = 0;
-    msg.postln;
-    msg.removeAt(0).postln;
-    // ch = msg.removeAt(0).postln;
-    // ~make_scores.(msg, 5)
+    // msg.postln;
+    // msg.removeAt(0).postln;
     // PANIC MODE!!!
+    "~~~ PANIC MODE! ~~~".postln;
+    ~emit_composition.("~~~ PANIC MODE! ~~~");
     Pdef.removeAll;
   },
   path: '/panic');

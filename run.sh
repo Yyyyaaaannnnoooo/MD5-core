@@ -10,7 +10,7 @@ SERVER_PID=$!
 sleep 2
 
 # Open Firefox to the local server
-open -a "/Applications/Firefox Developer Edition.app/Contents/MacOS/firefox" "http://127.0.0.1:3000"
+open -a "/Applications/Firefox.app/Contents/MacOS/firefox" "http://127.0.0.1:3000"
 
 # Wait for the server process (optional - keeps script running until server stops)
 wait $SERVER_PID
