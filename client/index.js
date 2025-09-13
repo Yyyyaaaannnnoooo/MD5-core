@@ -125,6 +125,24 @@ socket.on("play", (msg) => {
 
 const composition = document.querySelector(".viz");
 let composition_txt = "";
+
+function display_composition_OLD(msg, inline = true, div = 0) {
+  const maxLength = 15000;
+  // console.log(msg);
+  if (inline) {
+    composition_txt += msg + "<br>"
+  } else {
+    composition_txt += msg + " >>>>>>>>>>>> ";
+  }
+  // console.log(composition_txt.length)
+  if (composition_txt.length > maxLength) {
+    // console.log("MAX LENGTH REACHED!");
+    composition_txt = composition_txt.substring(parseInt(maxLength * 0.25), maxLength);
+  }
+  composition.innerHTML = composition_txt;
+  composition.scrollTop = composition.scrollHeight;
+}
+
 socket.on("composition", (msg) => {
   display_composition(msg)
   // const list = JSON.parse(msg);
@@ -140,21 +158,56 @@ socket.on("composition", (msg) => {
   // update_render_text(hash_txt)
 });
 
-function display_composition(msg, inline=true) {
+const messages = document.querySelector(".messages")
+const ch1 = document.querySelector(".ch1")
+const ch2 = document.querySelector(".ch2")
+const ch3 = document.querySelector(".ch3")
+let messages_txt = ""
+let ch1_txt = ""
+let ch2_txt = ""
+let ch3_txt = ""
+function display_composition(msg, inline = true, div = 0) {
   const maxLength = 15000;
   // console.log(msg);
-  if(inline){
-    composition_txt += msg + "<br>"
-  }else{
-    composition_txt += msg + " >>>>>>>>>>>> ";
+  if (inline) {
+    messages_txt += msg + "<br>"
+  } else {
+
+    switch (div) {
+      case 1:
+        console.log("channel:" + div);
+        ch1_txt += msg + " >>>>>>>>>>>> ";
+        break;
+      case 2:
+        console.log("channel:" + div);
+
+        ch2_txt += msg + " >>>>>>>>>>>> ";
+        break;
+      case 3:
+        ch3_txt += msg + " >>>>>>>>>>>> ";
+        console.log("channel:" + div);
+        break;
+
+      default:
+        break;
+    }
+
+    // 
   }
   // console.log(composition_txt.length)
-  if (composition_txt.length > maxLength) {
+  if (messages_txt.length > maxLength) {
     // console.log("MAX LENGTH REACHED!");
-    composition_txt = composition_txt.substring(parseInt(maxLength * 0.5), maxLength);
+    messages_txt = messages_txt.substring(parseInt(maxLength * 0.25), maxLength);
   }
-  composition.innerHTML = composition_txt;
-  composition.scrollTop = composition.scrollHeight;
+  messages.innerHTML = messages_txt;
+  messages.scrollTop = messages.scrollHeight;
+
+  ch1.innerHTML = ch1_txt;
+  ch2.innerHTML = ch2_txt;
+  ch3.innerHTML = ch3_txt;
+  ch1.scrollTop = ch1.scrollHeight;
+  ch2.scrollTop = ch2.scrollHeight;
+  ch3.scrollTop = ch3.scrollHeight;
 }
 
 socket.on("md5-part", (msg) => {

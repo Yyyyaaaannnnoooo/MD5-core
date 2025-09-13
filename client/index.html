@@ -20,13 +20,13 @@
       <!-- MIDI STUFF -->
       <div class="container-midi">
         <div class="midi-status">
-          <div>MIDI status</div>
+          <div>>>> MIDI</div>
           <div class="status disconnected" id="status">
-            MIDI access not yet requested
+            <!-- MIDI access not yet requested -->
           </div>
 
-          <button id="requestButton">Request MIDI Access</button>
-          <button id="panic">PANIC MODE</button>
+          <div id="requestButton"> >>> Summon MIDI</div>
+          <div id="panic">  >>> PANIC MODE</div>
         </div>
         <div class="midi-status">
           <div>Connected MIDI Devices</div>
@@ -34,14 +34,6 @@
           <ul id="devicesList"></ul>
 
         </div>
-        <!--  -->
-
-
-          <!-- <div>MIDI Messages</div>
-      <div class="midi-data" id="midiMessages">
-         <p>No messages received yet...</p> 
-      </div> -->
-        <!-- </div> -->
       </div>
     </div>
   </section>
@@ -49,7 +41,10 @@
 
 
   <div class="viz">
-
+    <div class="messages"></div>
+    <div class="ch1"></div>
+    <div class="ch2"></div>
+    <div class="ch3"></div>
   </div>
 
   <!-- <div id="c"></div> -->

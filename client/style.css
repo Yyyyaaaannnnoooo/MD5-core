@@ -37,8 +37,8 @@ body {
   flex-direction: column;
   width: 700px;
   height: 100vh;
-  background-color: #00000022;
-  border: solid 2px #afa;
+  /* background-color: #00000022; */
+  /* border: solid 2px #afa; */
 }
 
 .container-text{
@@ -49,6 +49,7 @@ body {
 .text,
 .hash {
   border: solid 2px #afa;
+  /* color: #3f3; */
   width: 100%;
   margin: 1rem;
   /* height: max-content; */
@@ -106,9 +107,17 @@ body {
   width: 100%;
   height: 100vh;
   z-index: -1;
+  display: flex;
+  flex-direction: row;
+}
+
+.messages, .ch1, .ch2, .ch3{
+  height: 100vh;
+  width: 25%;
   overflow-y: scroll;
   /* text-overflow: ; */
   word-break: break-all;
+  /* padding: 2rem; */
 }
 
 /* FROM DEEPSEEK */
@@ -204,6 +213,20 @@ button:disabled {
   color: #03dac6;
 }
 
-#panic {
-  background-color: #f33;
+#panic, #requestButton {
+  cursor: pointer;
+  margin-top: 5px;
+  /* background-color: #f33; */
+  transition: 0.5 color letter-spacing;
+}
+#panic{
+  color: #f66;
+}
+#panic:hover{
+  color: #f33;
+}
+
+#requestButton:hover{
+  color: #3f3;
+  /* letter-spacing: 5px; */
 }

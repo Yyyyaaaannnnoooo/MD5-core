@@ -110,12 +110,12 @@ document.addEventListener('DOMContentLoaded', function () {
       // Note on
       messageText = `<span style="color: ${note_color}">Note On: Channel ${channel + 1}, Note ${midi_to_note(note)}, Velocity ${velocity}</span>`;
 
-      display_composition(messageText, false)
+      display_composition(messageText, false, parseInt(channel)+1)
       
     } else if (command === 0x08 || (command === 0x09 && velocity === 0)) {
       // Note off
       messageText = `<span style="color: ${note_color}">Note Off: Channel ${channel + 1}, Note ${midi_to_note(note)}</span>`;
-      display_composition(messageText, false)
+      display_composition(messageText, false, parseInt(channel)+1)
     } else if (command === 0x0B) {
       // Control change
       messageText = `Control Change: Channel ${channel + 1}, Controller ${note}, Value ${velocity}`;
