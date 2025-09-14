@@ -93,6 +93,7 @@ text.addEventListener("keydown", event => {
       console.log(text.textContent);
       socket.emit("msg", text.textContent);
       // input.value = '';
+      // add_note();
       highlight_bg();
       reset_display_hashing()
     }
@@ -175,17 +176,17 @@ function display_composition(msg, inline = true, div = 0) {
 
     switch (div) {
       case 1:
-        console.log("channel:" + div);
+        // console.log("channel:" + div);
         ch1_txt += msg + " >>>>>>>>>>>> ";
         break;
       case 2:
-        console.log("channel:" + div);
+        // console.log("channel:" + div);
 
         ch2_txt += msg + " >>>>>>>>>>>> ";
         break;
       case 3:
         ch3_txt += msg + " >>>>>>>>>>>> ";
-        console.log("channel:" + div);
+        // console.log("channel:" + div);
         break;
 
       default:

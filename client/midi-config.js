@@ -111,6 +111,8 @@ document.addEventListener('DOMContentLoaded', function () {
       messageText = `<span style="color: ${note_color}">Note On: Channel ${channel + 1}, Note ${midi_to_note(note)}, Velocity ${velocity}</span>`;
 
       display_composition(messageText, false, parseInt(channel)+1)
+
+      add_note(random(innerWidth), innerHeight, midi_to_note(note))
       
     } else if (command === 0x08 || (command === 0x09 && velocity === 0)) {
       // Note off

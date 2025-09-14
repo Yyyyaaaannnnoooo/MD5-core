@@ -232,6 +232,7 @@ d = Dictionary.newFrom([
   var score, trigs;
   var chord = ~chord_names[melody];
   chord.postln;
+  ~emit_composition.("~~~ "++chord++" ~~~");
   // "melody".postln;
   // melody.postln;
   // ~notes[melody].postln;

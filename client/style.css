@@ -19,6 +19,10 @@ body {
   color: #afa;
 }
 
+.note{
+  transition: font-size 0.5s;
+}
+
 .container {
   position: fixed;
   top: 0px;
@@ -218,6 +222,7 @@ button:disabled {
   margin-top: 5px;
   /* background-color: #f33; */
   transition: 0.5 color letter-spacing;
+  user-select: none;
 }
 #panic{
   color: #f66;
