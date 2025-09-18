@@ -231,17 +231,39 @@ d = Dictionary.newFrom([
   var off3 = list[(12..14)].linlin(0,15,0.15,0.75);
   var score, trigs;
   var chord = ~chord_names[melody];
+  var composition = [];
   chord.postln;
   ~emit_composition.("~~~ "++chord++" ~~~");
-  // "melody".postln;
-  // melody.postln;
-  // ~notes[melody].postln;
+  "melody".postln;
+  melody.postln;
+  ~notes[melody].postln;
   // durs = dura!2;
-  20.do({
+  // fork{
+
+  // {
+  32.do({
     arg item, i;
     var dur = durs.choose;
-    var n = ~notes[melody].choose;
-    // n.postln;
+    var n = ~notes[melody];
+    var number_of_chords = n.size;
+    var md5_val = list[i];
+    var chord_to_play = md5_val.linlin(0, 15, 0, number_of_chords - 1).floor.asInteger;
+    /*    "notes".postln;
+    n.postln;
+    "number_of_chords".postln;
+    number_of_chords.postln;
+    "md5 value".postln;
+    md5_val.postln;
+    "md5 to chord value".postln;
+    chord_to_play.postln;
+    n.postln;
+    "chord to play".postln;
+    n.postln;*/
+    n = ~notes[melody][chord_to_play];
+    composition = composition.add(n);
+
+
+
     // n[0].postln;
     // n[1].postln;
     // n[2].postln;
@@ -261,24 +283,40 @@ d = Dictionary.newFrom([
     t1 = t1.add(~mRest.(off3[0]));
     t2 = t2.add(~mRest.(off3[1]));
     t3 = t3.add(~mRest.(off3[2]));
+    // 0.125.wait;
   });
+
+  // }.fork;
+
+  // };
   n1.postln;
   n2.postln;
   n3.postln;
-  fork{
-    ~emit_composition.(n1.asString());
-    0.5.wait;
-    ~emit_composition.(n2.asString());
-    0.5.wait;
-    ~emit_composition.(n3.asString());
-    0.5.wait;
-    ~emit_composition.(t1.asString());
-    0.5.wait;
-    ~emit_composition.(t2.asString());
-    0.5.wait;
-    ~emit_composition.(t3.asString());
 
-  };
+  {
+    composition.do({
+      arg item, i;
+      var msg = i.asString()++": "++ item.asString();
+      msg.postln;
+      ~emit_composition.(msg);
+      0.125.wait;
+    })
+  }.fork;
+
+  /*  fork{
+  ~emit_composition.(n1.asString());
+  0.5.wait;
+  ~emit_composition.(n2.asString());
+  0.5.wait;
+  ~emit_composition.(n3.asString());
+  0.5.wait;
+  ~emit_composition.(t1.asString());
+  0.5.wait;
+  ~emit_composition.(t2.asString());
+  0.5.wait;
+  ~emit_composition.(t3.asString());
+
+  };*/
   score = [n1, n2, n3];
   trigs = [t1, t2, t3];
   [score, trigs];
@@ -372,7 +410,7 @@ d = Dictionary.newFrom([
     // Remove arpeggio on violin
     // m.control(0, 1, arp1);
     m.control(1, 1, arp2);
-    ~emit.("~~~ Composition is Playng ~~~");
+    ~emit.("~~~ Composition is Playing ~~~");
     // ~emit_composition.(~score1.asString());
     ~play.(mutes);
   };
