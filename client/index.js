@@ -1,5 +1,25 @@
 const socket = io("http://localhost:3000");
 socket.emit("panic", "Panic");
+let sentence_num = 0;
+let char_num = 0;
+let sentence_done = false;
+const story = [
+  'this is a pico live coding environment',
+  'it is based on the md5 hashing algorithm',
+  'it can take a text of any length and turn it into a 128-bit string. or 32 hex digits.',
+  'The hash is than turned into a score, that we are hearing.',
+  'Now that we established that any text can become a variation of a requiem; what is the purpose of this live coding environment?',
+  'I can use Live Coding to tell a story.',
+  'And the words of this story will compose its own soundtrack',
+  'md5 as an algorithm was "retired" in 2010, as it was not meeting the security standards for criptography',
+  '...for long it encrypted, yet, its collision resistance was broken, and therefore unusable for cryptographic purposes',
+  '....and so this piece is to say goodbye. A farewell for md5',
+  'Ciao md5, we had adventurous and troubling times. And between that flowers resiliently grew up!',
+  'Ciao md5, your hashes never met the ocean, yet your name bestows a library.',
+  'stifle seagulls still flap their wings',
+  'curled laughter',
+  'Your name on that rock!'
+]
 
 // const form = document.getElementById('form');
 // const input = document.getElementById('input');
@@ -82,6 +102,8 @@ function make_hashing_string(str) {
 }
 
 text.addEventListener("keydown", event => {
+  // console.log(event.key);
+  // console.log(event.keyCode);
   if (event.key === "Shift") {
     console.log("shift");
     return
@@ -92,13 +114,34 @@ text.addEventListener("keydown", event => {
     if (text.textContent) {
       console.log(text.textContent);
       socket.emit("msg", text.textContent);
+      if (sentence_done) {
+        sentence_num++
+        char_num = 0;
+        sentence_done = false
+      }
       // input.value = '';
       // add_note();
       highlight_bg();
       reset_display_hashing()
     }
+  } else if (event.key !== "Backspace" || event.keyCode !== 8) {
+    event.preventDefault();
+    type_story()
   }
 })
+
+function type_story() {
+  const curr_sentence = story[sentence_num]
+  const len = curr_sentence.length
+  const curr_chars = curr_sentence.slice(0, char_num + 1)
+  // console.log(curr_chars);
+  text.textContent = curr_chars
+  char_num++
+  if (char_num >= len) {
+    sentence_done = true
+  }
+
+}
 
 const panic = document.querySelector("#panic")
 panic.addEventListener("click", () => {

@@ -3,16 +3,18 @@
 ~mclock.play;
 
 (
-MIDIClient.init;
-t = TempoClock.new(80/60).permanent_(true);
-m = MIDIOut(0);
-// m = MIDIOut.newByName("IAC Driver", "Bus 1");
-~remote = NetAddr("127.0.0.1", 57121);
+
 )
 
 "sh /Users/ya/Documents/__younger_sibling/md5-core/supercollider-static-web/run.sh".runInTerminal(shell: "/bin/zsh")
 
 (
+
+MIDIClient.init;
+t = TempoClock.new(80/60).permanent_(true);
+m = MIDIOut(0);
+// m = MIDIOut.newByName("IAC Driver", "Bus 1");
+~remote = NetAddr("127.0.0.1", 57121);
 
 ~mpseq = {arg list;  Pseq(list, inf)};
 
@@ -299,7 +301,7 @@ d = Dictionary.newFrom([
       var msg = i.asString()++": "++ item.asString();
       msg.postln;
       ~emit_composition.(msg);
-      0.125.wait;
+      (0.125 * 0.5).wait;
     })
   }.fork;
 
@@ -358,10 +360,7 @@ d = Dictionary.newFrom([
   result = list.linlin(0, 15, 0.8, 1);
 };
 
-)
 
-
-(
 
 ~make_scores = {
   arg list, dura;
@@ -373,9 +372,9 @@ d = Dictionary.newFrom([
   var vol1 = list[18].linlin(0, 15, 0,10).floor.asInteger;
   var vol2 = list[19].linlin(0, 15, 0,10).floor.asInteger;
   var vol3 = list[20].linlin(0, 15, 0,10).floor.asInteger;
-  var long1 = list[21].linexp(0, 15, 1,4).floor.asInteger;
-  var long2 = list[22].linexp(0, 15, 1,4).floor.asInteger;
-  var long3 = list[23].linexp(0, 15, 1,4).floor.asInteger;
+  var long1 = list[21].linexp(0, 15, 1,6).floor.asInteger;
+  var long2 = list[22].linexp(0, 15, 1,6).floor.asInteger;
+  var long3 = list[23].linexp(0, 15, 1,6).floor.asInteger;
 
   // if(arp1 == bend && arp2 == bend, arp2 = 0);
 
@@ -404,7 +403,7 @@ d = Dictionary.newFrom([
   fork{
 
     ~stop.();
-    3.wait;
+    6.wait;
     "~~~ Execute Composition ~~~".postln;
     // choose which instrument does arpeggio
     // Remove arpeggio on violin
@@ -416,10 +415,7 @@ d = Dictionary.newFrom([
   };
 };
 
-)
 
-
-(
 
 OSCdef(
   key: \image,

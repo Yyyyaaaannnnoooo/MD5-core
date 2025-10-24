@@ -10,6 +10,9 @@
 
   scrollbar-width: none;
 }
+html{
+  font-size: 1rem;
+}
 
 body {
   margin: 0;
@@ -39,7 +42,7 @@ body {
 .centered{
   display: flex;
   flex-direction: column;
-  width: 700px;
+  width: 75%;
   height: 100vh;
   /* background-color: #00000022; */
   /* border: solid 2px #afa; */
@@ -62,6 +65,8 @@ body {
   background-color: #00000022;
   overflow-y: scroll;
   backdrop-filter: blur(1.5px);
+  font-size: 2rem;
+  text-shadow: black 3px 3px 2px;
 }
 
 .text {

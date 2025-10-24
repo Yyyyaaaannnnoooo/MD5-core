@@ -13,4 +13,4 @@ sleep 2
 open -a "/Applications/Firefox.app/Contents/MacOS/firefox" "http://127.0.0.1:3000"
 
 # Wait for the server process (optional - keeps script running until server stops)
-wait $SERVER_PID
+# wait $SERVER_PID

@@ -92,6 +92,10 @@ function draw() {
   pmouseX = mouseX;
   pmouseY = mouseY;
   // console.log(particles.length);
+  if(particles.length > 200){
+    particles.splice(0,1)
+    particles[0].remove()
+  }
 }
 
 class Particle {

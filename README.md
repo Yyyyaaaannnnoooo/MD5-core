@@ -20,11 +20,11 @@ Despite its initial widespread adoption, MD5 has been considered cryptographical
 
 MD5 Core consists of three main components:
 
-1. Web Interface: A React-based frontend where users can input text
+1. Web Interface: where users can input text
 
 2. MD5 Hashing: The input text is processed through the MD5 algorithm to generate a 128-bit hash
 
-3. MIDI Composition: The hash is sent via OSC protocol to SuperCollider, which generates a musical composition based on requiem chords. The resulting composition is served over MIDI.
+3. MIDI Composition: The hash is sent via OSC protocol to SuperCollider, which generates a musical composition based on requiem chords. The resulting composition is served over MIDI
 
 Each hash produces a unique musical piece that reflects the solemn, memorial nature of a funeral mass.
 
@@ -79,7 +79,7 @@ Each hash produces a unique musical piece that reflects the solemn, memorial nat
 - Ab, C, Eb
 
 2. Eb - Bb - Cm - Gm - Ab - Eb - Ab - Bb
- 
+
 - Eb, G, Bb 
 - Bb, D, F 
 - C, Eb, G 
