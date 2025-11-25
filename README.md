@@ -4,7 +4,8 @@
 
 [LIVE CODING](https://youtu.be/TZOxIBP_L-o)
 
-This is a Pico Live Coding environment based on the MD5 hashing algorithm. It takes a text of any length and turns it into a 128-bit hash, which is then transformed into a musical score. This work explores the history and cryptographic retirement of MD5. Designed by Ronald Rivest in 1992, MD5 was a widely adopted cryptographic hash function. However, considered cryptographically broken since 2005-2008, it was formally deprecated by the National Institute of Standards and Technology in 2010. By transforming text into musical requiems, this work serves as a final tribute to the hashing function, generating farewell requiems to the algorithm.
+This is a Pico Live Coding environment based on the MD5 hashing algorithm. It takes a text of any length and turns it into a 128-bit hash, which is then transformed into a musical score. This work explores the history and cryptographic retirement of MD5. Designed by Ronald Rivest in 1992, MD5 was a widely adopted cryptographic hash function. However, considered cryptographically broken since 2005-2008, it was formally deprecated by the National Institute of Standards and Technology in 2010.
+By transforming text into musical requiems, this work serves as a final tribute to the MD5 hashing function.
 
 ### Technical Architecture
 
