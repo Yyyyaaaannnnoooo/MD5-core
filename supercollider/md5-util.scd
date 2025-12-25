@@ -94,7 +94,7 @@ s.waitForBoot({
   };
 
   ~strings = [];
-  ~choir = [];
+  ~viola = [];
   ~bass = [];
   ~score1 = [];
   ~trigs1 = [];
@@ -124,55 +124,41 @@ s.waitForBoot({
         ~strings.do({arg item; item.play})
       },
       1, {
-        ~choir.do({arg item; item.play})
+        ~viola.do({arg item; item.play})
       },
       2, {
         ~bass.do({arg item; item.stop})
       },
       3, {
         ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play})
+        ~viola.do({arg item; item.play})
       },
       4, {
-        ~choir.do({arg item; item.play});
+        ~viola.do({arg item; item.play});
         ~bass.do({arg item; item.play})
       },
       5, {
         ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play})
+        ~bass.do({arg item; item.play});
       },
       6, {
-        ~choir.do({arg item; item.play});
-        ~bass.do({arg item; item.play})
+        ~strings.do({arg item; item.play});
+        ~viola.do({arg item; item.play});
+        ~bass.do({arg item; item.play});
       },
       7, {
         ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play});
+        ~viola.do({arg item; item.play});
         ~bass.do({arg item; item.play})
       },
       8, {
         ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play});
+        ~viola.do({arg item; item.play});
         ~bass.do({arg item; item.play})
       },
       9, {
         ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play});
-        ~bass.do({arg item; item.play})
-      },
-      10, {
-        ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play});
-        ~bass.do({arg item; item.play})
-      },
-      11, {
-        ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play});
-        ~bass.do({arg item; item.play})
-      },
-      12, {
-        ~strings.do({arg item; item.play});
-        ~choir.do({arg item; item.play});
+        ~viola.do({arg item; item.play});
         ~bass.do({arg item; item.play})
       },
     );
@@ -182,7 +168,7 @@ s.waitForBoot({
   ~stop = {
     // Pdef.removeAll;
     ~strings.do({arg item; item.stop});
-    ~choir.do({arg item; item.stop});
+    ~viola.do({arg item; item.stop});
     ~bass.do({arg item; item.stop});
   };
 
@@ -208,6 +194,7 @@ s.waitForBoot({
 
   ~mpseq = {arg list;  Pseq(list, inf)};
 
+  // MAKE MIDI pattern
   ~mmn = {
     arg channel, name=nil, patN, patD, patV;
     var pat_name = "ch"++channel++name.asString;
@@ -239,7 +226,7 @@ s.waitForBoot({
     p3 = ~mmn.(ch, "p3", ~mpseq.(n3), ~mpseq.(t3), ~mpseq.(v3));
     [p1, p2, p3]
   };
-
+  // Patterns for Sc SynthDefs
   ~mpdef = {
     arg channel, name=nil, patN, patD, patV;
     var pat_name = "string"++channel++name.asString;
@@ -276,7 +263,7 @@ s.waitForBoot({
     Pdef(pat_name).fadeTime = 1.0;
   };
 
-  ~make_ptn = {
+  ~make_chord_ptn = {
     arg ch, notes, trigs, list;
     var n1 = notes[0], n2 = notes[1], n3 = notes[2];
     var t1 = trigs[0], t2 = trigs[1], t3 = trigs[2];
@@ -307,8 +294,7 @@ s.waitForBoot({
   };
 
   ~make_score = {
-    // dura s deprecated
-    arg list, dura;
+    arg list;
     var n1 = [], n2 = [], n3 = [];
     var t1 = [], t2 = [], t3 = [];
     var durs = list[[1,2,3,4]].linlin(0,15,5,10);
@@ -379,13 +365,12 @@ s.waitForBoot({
   };
 
   ~make_scores = {
-    // dura s deprecated
-    arg list, dura;
-    var score = ~make_score.(list, dura);
+    arg list;
+    var score = ~make_score.(list);
     var bend = 0.125;
     var arp1 = if(list[15] > 7, bend, 1);
     var arp2 = if(list[16] > 7, bend, 1);
-    var mutes = list[17].linlin(0, 15, 0, 12).floor.asInteger;
+    var mutes = list[17].linlin(0, 15, 0, 9).floor.asInteger;
     var vol1 = list[18].linlin(0, 15, 0,10).floor.asInteger;
     var vol2 = list[19].linlin(0, 15, 0,10).floor.asInteger;
     var vol3 = list[20].linlin(0, 15, 0,10).floor.asInteger;
@@ -405,12 +390,12 @@ s.waitForBoot({
 
     ~score1 = score[0];
     ~trigs1 = score[1];
-
-
     ~trigs1 = ~trigs1.collect({arg item,i;item = ~longer.(long1, item)});
+
     ~score2 = score[0];
     ~trigs2 = score[1];
     ~trigs2 = ~trigs2.collect({arg item,i;item = ~longer.(long2, item)});
+
     ~score3 = score[0];
     ~trigs3 = score[1];
     ~trigs3 = ~trigs3.collect({arg item,i;item = ~longer.(long3, item)});
@@ -418,14 +403,14 @@ s.waitForBoot({
     // HeRE WE COULD ROTATE THE score for each instrument
     // and add
     /*~strings = ~make_midi_ptn.(0, ~score1, ~trigs1, list);
-    ~choir   = ~make_midi_ptn.(1, ~score2, ~trigs2, list.rotate(2));
+    ~viola   = ~make_midi_ptn.(1, ~score2, ~trigs2, list.rotate(2));
     ~bass    = ~make_midi_ptn.(2, ~score3, ~trigs3, list.rotate(4));
     */
 
     // not midi
-    ~strings = ~make_ptn.(0, ~score1 + (12 + (2.rand * 12)), ~trigs1, list);
-    ~choir   = ~make_ptn.(1, ~score2, ~trigs2, list.rotate(2));
-    ~bass    = ~make_ptn.(2, ~score3 - 24, ~trigs3, list.rotate(4));
+    ~strings = ~make_chord_ptn.(0, ~score1 + (12 + (2.rand * 12)), ~trigs1, list);
+    ~viola   = ~make_chord_ptn.(1, ~score2, ~trigs2, list.rotate(2));
+    ~bass    = ~make_chord_ptn.(2, ~score3 - 24, ~trigs3, list.rotate(4));
 
     fork{
       ~stop.();
@@ -451,22 +436,28 @@ s.waitForBoot({
     ~outs = [~ch1, ~ch2, ~ch3];
   };
 
-  ~init.();
+  // ~init.();
 
   SynthDef(\saw, {
     arg midi_note=55, dur=1, out=0, a=1.5, d=0.125, s=0.75, r=1.25;
     var sig, env, detune;
-    detune = LFNoise1.kr(0.2!8).bipolar(0.2).midiratio;
+    detune = LFNoise1.kr(0.2!6).bipolar(0.2).midiratio;
     sig = LFSaw.ar(midi_note.midicps * detune);
     // sig = LFSaw.ar(midi_note.midicps);
     sig = Mix.ar(sig);
     sig = CombC.ar(sig, 0.5, 0.1, 0.5);
+/*    sig = sig + CombC.ar(
+      in: WhiteNoise.ar(),
+      maxdelaytime: 10.reciprocal,
+      delaytime: (midi_note.midicps).reciprocal,
+      decaytime:0.125
+    );*/
     env = EnvGen.kr(
       envelope: Env.adsr(
-        a + 0.25.rand2,
+        a + 0.025.rand2,
         d + 0.01.rand2,
-        s + 0.1.rand2,
-        r + 0.25.rand2,
+        s + 0.01.rand2,
+        r + 0.025.rand2,
         curve:[2, -4, 2]),
       gate: \gate.kr(1),
       doneAction: Done.freeSelf
@@ -495,7 +486,7 @@ s.waitForBoot({
 
     sig3= RLPF.ar(input3, \lpf3.kr(8000, 0.25).clip(20, 19000));
     sig3 = RHPF.ar(sig3, \hpf3.kr(40, 0.5).clip(20, 19000));
-    sig3 = Balance2.ar(sig3[0], sig3[1], \pan.kr(0));
+    sig3 = Balance2.ar(sig3[0], sig3[1], \pan3.kr(0));
     sig3 = sig3 * \amp3.kr(0.dbamp, 0.5);
 
     snd = sig1+sig2+sig3;
@@ -550,3 +541,132 @@ s.waitForBoot({
 });
 
 )
+
+
+
+
+// GLOBAL PARAMETERS
+motif = ["up_minor_third", "down_step"] // small melodic cell
+global_range = (G3, E6) // violin comfort range
+phrase_length = random_choice([4, 8]) // chords per phrase
+
+// SELECT HARMONIC CONTEXT
+current_chord_set = random_choice(~notes) // one of your 7 chord arrays
+current_progression = current_chord_set[0:phrase_length] // or entire set
+
+// MAIN GENERATION LOOP
+output_notes = []
+previous_note = None
+
+for each chord in current_progression:
+
+  // 1. DECIDE PHRASE STRUCTURE FOR THIS CHORD
+  if random(0-1) < 0.4:
+    structure = "ARPEGGIO_THEN_LONG"
+  else:
+    structure = "MELODIC_PHRASE"  // 60% case - more lyrical
+
+  // 2. SELECT STARTING PITCH (considering voice leading)
+  if previous_note is None:
+    // First chord: start on a stable mid-range chord tone
+    start_note = select_closest_to_middleC(chord_tones(chord))
+  else:
+    // Apply voice leading: closest chord tone to previous note
+    start_note = find_closest_chord_tone(previous_note, chord)
+
+  // 3. GENERATE NOTES FOR THIS CHORD DURATION
+  chord_duration = 2.0 // seconds (for example)
+  chord_notes = []
+
+  if structure == "ARPEGGIO_THEN_LONG":
+    // 3A. Quick arpeggio (40% case)
+    arpeggio_length = random_choice([3, 4, 5, 6]) // number of notes
+    arpeggio_notes = generate_arpeggio(
+      chord: chord,
+      start_note: start_note,
+      length: arpeggio_length,
+      rhythm: "fast_tuplets" // 16ths or triplets
+    )
+
+    // 3B. Follow with long resolution note
+    // Choose a harmonically stable tone from current chord
+    resolution_note = select_stable_tone(chord, preference: "root_or_fifth")
+
+    // Ensure smooth voice leading from last arpeggio note
+    resolution_note = find_closest_chord_tone(
+      last(arpeggio_notes),
+      chord,
+      bias_toward: "root_or_fifth"
+    )
+
+    // Build final sequence: arpeggio + long note
+    chord_notes = arpeggio_notes + [resolution_note]
+
+    // Set durations: fast for arpeggio, long for resolution
+    durations = [0.1, 0.1, 0.1, 0.1, 1.6] // example: 4 fast + 1 long
+
+  else: // structure == "MELODIC_PHRASE" (60% case)
+    // 3C. Lyrical, expressive line (not just arpeggio)
+    // This is where the real "composition" happens
+
+    // Option 1: Simple expressive line (most common)
+    // Create a small melodic contour using chord tones and passing tones
+    num_notes = random_choice([2, 3, 4]) // fewer notes, more expressive
+    chord_notes = generate_melodic_contour(
+      chord: chord,
+      start_note: start_note,
+      num_notes: num_notes,
+      contour_shape: random_choice(["arch", "descend", "ascend"]),
+      allow_passing_tones: true
+    )
+
+    // Option 2: Single long expressive note (with ornament)
+    if random() < 0.3: // 30% of melodic phrases
+      chord_notes = [start_note]
+      // Add ornamentation: vibrato, slight pitch bend, dynamic swell
+      ornament = random_choice(["vibrato", "crescendo", "slight_fall"])
+
+    // Option 3: Motif-based development
+    if should_develop_motif(): // e.g., every 3rd chord
+      chord_notes = apply_motif(
+        motif: motif,
+        starting_pitch: start_note,
+        chord_context: chord
+      )
+
+    // Set expressive durations
+    durations = generate_expressive_rhythm(num_notes: length(chord_notes))
+    // e.g., [0.7, 0.1, 1.2] - varied, rubato-like
+
+  // 4. APPLY VIOLINISTIC ARTICULATION
+  for each note in chord_notes:
+    articulation = select_articulation(
+      note_index: index,
+      note_duration: durations[index],
+      is_last_note: (index == last_index)
+    )
+    // Examples: "legato", "portato", "slight_staccato", "accent"
+
+  // 5. ENSURE MONOPHONY (CRITICAL)
+  // Since we're generating multiple notes per chord,
+  // we need to sequence them properly
+  for i in range(length(chord_notes)):
+    note_event = {
+      pitch: chord_notes[i],
+      duration: durations[i],
+      articulation: articulations[i],
+      start_time: cumulative_time,
+      chord_context: chord // keep track for harmonic analysis
+    }
+    output_notes.append(note_event)
+    cumulative_time += durations[i]
+
+  // 6. PREPARE FOR NEXT CHORD
+  previous_note = last(chord_notes) // for voice leading to next chord
+
+// 7. ADD PHRASE-LEVEL SHAPING
+apply_phrase_dynamics(output_notes) // crescendo/decrescendo
+apply_microtiming_variations(output_notes) // humanization
+add_rests_between_phrases(output_notes) // breathing space
+
+return output_notes
