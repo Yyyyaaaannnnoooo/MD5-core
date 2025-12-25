@@ -1,68 +1,35 @@
-const express = require('express');
-const { createServer } = require('node:http');
-const path = require('path')
-const { join } = require('node:path');
-const { Server } = require('socket.io');
-
-const app = express();
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: ["http://127.0.0.1:3000","http://127.0.0.1:5500"]
-  }
-});
-
-
-app.use(express.static(path.join(__dirname, '..', 'client')));
-app.get('/', (req, res) => {
-  // res.sendFile(join(__dirname, 'index.html'));
-  const filePath = path.join(__dirname, '..', 'client', 'index.html');
-  res.sendFile(filePath);
-});
-
-io.on('connection', (socket) => {
-  console.log('CONNECTION');
-  socket.on("msg", msg => {
-    console.log(msg);
-    make_md5_hash(msg)
-  })
-  socket.on("panic", msg => {
-    console.log(msg);
-    send_panic()
-  })
-});
-
-
-server.listen(3000, () => {
-  console.log('server running at http://localhost:3000');
-});
-
 const osc = require("osc")
-const local_address = "127.0.0.1"
+const local_address = "0.0.0.0"
+const remote_address = "192.168.1.60"
 const local_port = 57121
 const remote_port = 57120
 
 // Create an osc.js UDP Port listening on port 57121.
 const udpPort = new osc.UDPPort({
-  localAddress: "127.0.0.1",
+  localAddress: local_address,
   localPort: local_port,
+  remoteAddress: "192.168.1.60", // Pi's IP
+  remotePort: remote_port, // SuperCollider's port
   metadata: true
 });
 
+const msg = [
+   9, 4, 8, 11, 12,  6,  9,  4, 14,
+  13, 1, 3,  6,  0, 12, 15,  6, 13,
+   0, 4, 5,  3,  7,  8,  6, 12,  6,
+   3, 2, 3,  2, 14
+]
+
 // Listen for incoming OSC messages.
 udpPort.on("message", function (oscMsg, timeTag, info) {
-  console.log("An OSC message just arrived!");
-  const value = oscMsg["args"][0]["value"];
-  console.log(value);
+  console.log("An OSC message just arrived!", oscMsg);
   if (oscMsg["address"] === "/play") {
-    io.emit("play", oscMsg["args"][0]["value"]);
+    // io.emit("play", oscMsg["args"][0]["value"]);
   }else if(oscMsg["address"] === "/composition"){
-    // console.log(value);
-    io.emit("composition", oscMsg["args"][0]["value"])
-  } else if(oscMsg["address"] === "/get"){
-    // console.log(value);
+    // io.emit("composition", oscMsg["args"][0]["value"])
+  } else {
+    const value = oscMsg["args"][0]["value"];
     // const midi_ch = oscMsg["args"][0]["value"];
-    // console.log(value);
     make_md5_hash(value);
   }
   // console.log("Remote info is: ", info);
@@ -76,56 +43,34 @@ udpPort.on("message", function (oscMsg, timeTag, info) {
 // Open the socket.
 udpPort.open();
 
-
+let interval = null;
 // // When the port is read, send an OSC message to, say, SuperCollider
 udpPort.on("ready", function () {
   console.log("Connected with SuperCollider");
+  send_osc(msg)
+  interval = setInterval(()=>{
+    console.log("send message");
+    // send_osc(msg)
+  }, 1000 * 120)
 });
+// send_osc(msg)
 
 
-function make_md5_hash(value) {
-  const md5 = MD5(value);
-  // console.log(object);
+// function send_osc(msg) {
+//   udpPort.send({
+//     address: "/md5",
+//     args: make_message(msg)
+//   }, remote_address, remote_port);
+// }
 
-  // here 
-
-  console.log(md5);
-  const hex = hexToBytesWithBuffer(md5);
-  console.log(hex);
-  // hex.unshift(midi_ch);
-  console.log(hex.length);
-  io.emit("hash", md5);
-  send_osc(hex);
-}
-
-function hexToBytesWithBuffer(hex) {
-  const list = hex.split('');
-  const result = []
-  list.forEach(element => {
-    const val = parseInt(element, 16);
-    result.push(val)
-  });
-  // return Array.from(Buffer.from(hex, 'hex'));
-  return result;
-}
-
-
-function send_osc(msg) {
+function 
+send_osc(msg) {
   udpPort.send({
     address: "/md5",
     args: make_message(msg)
-  }, local_address, remote_port);
-}
-function send_panic() {
-  udpPort.send({
-    address: "/panic",
-    args: { type: 's', value: 'PANIC!' }
-  }, local_address, remote_port);
+  });
 }
 
-function emit_md5_parts(md5){
-  io.emit("md5-part", md5);
-}
 
 function make_message(array) {
   result = []
@@ -139,13 +84,30 @@ function make_message(array) {
   return result
 }
 
-function stringToByteArray(str) {
-  const byteArray = [];
-  for (let i = 0; i < str.length; i++) {
-    byteArray.push(str.charCodeAt(i));
-  }
-  return byteArray;
+function make_md5_hash(value) {
+  const md5 = MD5(value);
+  console.log(md5);
+  const hex = hexToBytesWithBuffer(md5);
+  console.log(hex);
+  // hex.unshift(midi_ch);
+  console.log(hex.length);
+  // io.emit("hash", md5);
+  send_osc(hex);
 }
+
+
+function hexToBytesWithBuffer(hex) {
+  const list = hex.split('');
+  const result = []
+  list.forEach(element => {
+    const val = parseInt(element, 16);
+    result.push(val)
+  });
+  // return Array.from(Buffer.from(hex, 'hex'));
+  return result;
+}
+
+
 
 
 MD5 = function (e) {
@@ -224,6 +186,3 @@ MD5 = function (e) {
   emit_md5_parts(md5_parts)
   return result
 };
-
-// SOURCE  : https://stackoverflow.com/questions/1655769/fastest-md5-implementation-in-javascript
-// SOURCE 2: https://gist.github.com/souhaiebtar/f0e064152b70902f2cd58cf9b8311be9

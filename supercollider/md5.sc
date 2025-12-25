@@ -1,422 +1,18 @@
-// midi clock if needed
-~mclock = MIDIClockOut.new("IAC Driver", "Bus 1", t);
-~mclock.play;
-
-(
-
-)
-
 "sh /Users/ya/Documents/__younger_sibling/md5-core/supercollider-static-web/run.sh".runInTerminal(shell: "/bin/zsh")
 
 (
+~start = {
+  arg file = "md5-util.scd";
+  var path = PathName(thisProcess.nowExecutingPath).parentPath;
+  (path++file).postln;
+  PathName(path++file).fullPath.openDocument;
+  PathName(path++file).fullPath.load
+}
+)
 
-MIDIClient.init;
-t = TempoClock.new(80/60).permanent_(true);
-m = MIDIOut(0);
-// m = MIDIOut.newByName("IAC Driver", "Bus 1");
-~remote = NetAddr("127.0.0.1", 57121);
+~start.()
 
-~mpseq = {arg list;  Pseq(list, inf)};
-
-~mmn = {
-  arg channel, name, patN, patD, patV;
-  var pat_name = "ch"++channel++name.asString;
-  pat_name = pat_name.asSymbol;
-  Pdef(pat_name).clear;
-  Pdef(pat_name, Pbind(
-    \type,\midi,
-    \midiout,m,\midicmd,\noteOn,\chan,channel,
-    \midinote, patN,
-    \dur, patD,
-    \amp, patV, // velocity
-  ));
-  Pdef(pat_name).quant_(1);
-  Pdef(pat_name).fadeTime = 1.0;
-};
-
-~getmd5 = {
-  arg txt;
-  ~remote.sendMsg("/get", txt);
-};
-
-~emit = {
-  arg txt;
-  ~remote.sendMsg("/play", txt);
-};
-
-~emit_composition = {
-  arg txt;
-  txt.postln;
-  ~remote.sendMsg("/composition", txt);
-};
-
-
-d = Dictionary.newFrom([
-  \C, 0,
-  'C#', 1,
-  \D, 2,
-  'D#', 3,
-  \Eb, 3,
-  \E, 4,
-  \F, 5,
-  'F#', 6,
-  \G, 7,
-  'G#', 8,
-  \Ab, 8,
-  \A, 9,
-  \Bb, 10,
-  \B, 11,
-
-]);
-
-~notes = [
-  [
-    ["C", "Eb", "G"],
-    ["F", "Ab", "C"],
-    ["C", "Eb", "G"],
-    ["G", "B",  "D"]
-  ],
-  [
-    ["C", "Eb", "G"],
-    ["F", "Ab", "C"],
-    ["Ab", "C", "Eb"],
-    ["G", "B", "D"],
-  ],
-  [
-    ["D", "F", "A"],
-    ["A", "C#", "E"],
-    ["G", "Bb", "D"],
-    ["A", "C#", "E"],
-    ["D", "F", "A"],
-  ],
-  [
-    ["D", "F", "A"],
-    ["C#", "F", "G#", "C"],
-    ["A", "C#", "E"],
-  ],
-  [
-    ["Eb", "G", "Bb"],
-    ["Bb", "D", "F"],
-    ["C", "Eb", "G"],
-    ["Ab", "C", "Eb"],
-  ],
-  [
-    ["Eb", "G", "Bb"],
-    ["Bb", "D", "F"],
-    ["C", "Eb", "G"],
-    ["G", "Bb", "D"],
-    ["Ab", "C", "Eb"],
-    ["Eb", "G", "Bb"],
-    ["Ab", "C", "Eb"],
-    ["Bb", "D", "F"],
-  ],
-  [
-    ["A", "C", "E"],
-    ["C", "E", "G"],
-    ["F", "A", "C"],
-    ["G", "B", "D"],
-  ]
-];
-
-~chord_names = ["Kyrie V1", "Kyrie V2", "Dies Irae V1", "Dies Irae V2", "Sanctus V1", "Sanctus V2", "Lux Aeterna"];
-
-
-
-~convert = {
-  arg string;
-  d.at(string.asSymbol);
-};
-
-~strings = [];
-~choir = [];
-~bass = [];
-~score1 = [];
-~trigs1 = [];
-~score2 = [];
-~trigs2 = [];
-~score3 = [];
-~trigs3 = [];
-~offset = {arg val=0; ([0,0.05,0.1,0.15]+val).choose};
-// ~offset.();
-~mRest = {arg time; Rest(time)};
-
-
-~play = {
-  arg mutes;
-  // "play".postln;
-  // mutes.postln;
-  // x o o
-  // o x o
-  // o o x
-  // x x o
-  // x o x
-  // x x x
-  switch(
-    mutes,
-    0, {
-      // "play strings".postln;
-      ~strings.do({arg item; item.play})
-    },
-    1, {
-      ~choir.do({arg item; item.play})
-    },
-    2, {
-      ~bass.do({arg item; item.stop})
-    },
-    3, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play})
-    },
-    4, {
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-    5, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play})
-    },
-    6, {
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-    7, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-    8, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-    9, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-    10, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-    11, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-    12, {
-      ~strings.do({arg item; item.play});
-      ~choir.do({arg item; item.play});
-      ~bass.do({arg item; item.play})
-    },
-  );
-};
-
-// STOP
-~stop = {
-  ~strings.do({arg item; item.stop});
-  ~choir.do({arg item; item.stop});
-  ~bass.do({arg item; item.stop});
-
-};
-
-~make_score = {
-  arg list, dura;
-  var n1 = [], n2 = [], n3 = [];
-  var t1 = [], t2 = [], t3 = [];
-  var durs = list[[1,2,3,4]].linlin(0,15,0.5,15);
-  var root = list[5].linlin(0, 15, 0, 3).floor.asInteger;
-  var melody = list[0].linlin(0, 15, 0, 6).floor.asInteger;
-  // OFFSETS to give more movement to notes
-  var off1 = list[(6..8)].linlin(0,15,0,0.25);
-  var off2 = list[(9..11)].linlin(0,15,0,0.25);
-  var off3 = list[(12..14)].linlin(0,15,0.15,0.75);
-  var score, trigs;
-  var chord = ~chord_names[melody];
-  var composition = [];
-  chord.postln;
-  ~emit_composition.("~~~ "++chord++" ~~~");
-  "melody".postln;
-  melody.postln;
-  ~notes[melody].postln;
-  // durs = dura!2;
-  // fork{
-
-  // {
-  32.do({
-    arg item, i;
-    var dur = durs.choose;
-    var n = ~notes[melody];
-    var number_of_chords = n.size;
-    var md5_val = list[i];
-    var chord_to_play = md5_val.linlin(0, 15, 0, number_of_chords - 1).floor.asInteger;
-    /*    "notes".postln;
-    n.postln;
-    "number_of_chords".postln;
-    number_of_chords.postln;
-    "md5 value".postln;
-    md5_val.postln;
-    "md5 to chord value".postln;
-    chord_to_play.postln;
-    n.postln;
-    "chord to play".postln;
-    n.postln;*/
-    n = ~notes[melody][chord_to_play];
-    composition = composition.add(n);
-
-
-
-    // n[0].postln;
-    // n[1].postln;
-    // n[2].postln;
-    t1 = t1.add(~mRest.(off1[0]));
-    // n1 = n1.add((~convert.(n[0]) + 60 + root));
-    n1 = n1.add((~convert.(n[0]) + 60));
-    t2 = t2.add(~mRest.(off1[1]));
-    n2 = n2.add((~convert.(n[1]) + 60));
-    t3 = t3.add(~mRest.(off1[2]));
-    n3 = n3.add((~convert.(n[2]) + 60));
-    t1 = t1.add(dur);
-    t2 = t2.add(dur);
-    t3 = t3.add(dur);
-    t1 = t1.add(~mRest.(off2[0]));
-    t2 = t2.add(~mRest.(off2[1]));
-    t3 = t3.add(~mRest.(off2[2]));
-    t1 = t1.add(~mRest.(off3[0]));
-    t2 = t2.add(~mRest.(off3[1]));
-    t3 = t3.add(~mRest.(off3[2]));
-    // 0.125.wait;
-  });
-
-  // }.fork;
-
-  // };
-  n1.postln;
-  n2.postln;
-  n3.postln;
-
-  {
-    composition.do({
-      arg item, i;
-      var msg = i.asString()++": "++ item.asString();
-      msg.postln;
-      ~emit_composition.(msg);
-      (0.125 * 0.5).wait;
-    })
-  }.fork;
-
-  /*  fork{
-  ~emit_composition.(n1.asString());
-  0.5.wait;
-  ~emit_composition.(n2.asString());
-  0.5.wait;
-  ~emit_composition.(n3.asString());
-  0.5.wait;
-  ~emit_composition.(t1.asString());
-  0.5.wait;
-  ~emit_composition.(t2.asString());
-  0.5.wait;
-  ~emit_composition.(t3.asString());
-
-  };*/
-  score = [n1, n2, n3];
-  trigs = [t1, t2, t3];
-  [score, trigs];
-};
-
-~stutter = {
-  arg number, score, trigs;
-  score = score.dupEach(number);
-  trigs = trigs.dupEach(number) * number.reciprocal;
-  [score, trigs];
-};
-
-~longer = {
-  arg number, trigs;
-  trigs = trigs * number;
-  // trigs.postln;
-  trigs;
-};
-
-~make_ptn = {
-  arg ch, notes, trigs, list;
-  var n1 = notes[0], n2 = notes[1], n3 = notes[2];
-  var t1 = trigs[0], t2 = trigs[1], t3 = trigs[2];
-  var v1 = list[(0..9)], v2 = list[(10..19)], v3 = list[(20..29)];
-  var p1, p2, p3;
-  v1 = ~make_velocities.(v1);
-  v2 = ~make_velocities.(v2);
-  v3 = ~make_velocities.(v3);
-
-  p1 = ~mmn.(ch, "p1", ~mpseq.(n1), ~mpseq.(t1), ~mpseq.(v1));
-  p2 = ~mmn.(ch, "p2", ~mpseq.(n2), ~mpseq.(t2), ~mpseq.(v2));
-  p3 = ~mmn.(ch, "p3", ~mpseq.(n3), ~mpseq.(t3), ~mpseq.(v3));
-  [p1, p2, p3]
-};
-
-~make_velocities = {
-  arg list;
-  var result;
-  result = list.linlin(0, 15, 0.8, 1);
-};
-
-
-
-~make_scores = {
-  arg list, dura;
-  var score = ~make_score.(list, dura);
-  var bend = 127;
-  var arp1 = if(list[15] > 7, bend, 0);
-  var arp2 = if(list[16] > 7, bend, 0);
-  var mutes = list[17].linlin(0, 15, 0, 12).floor.asInteger;
-  var vol1 = list[18].linlin(0, 15, 0,10).floor.asInteger;
-  var vol2 = list[19].linlin(0, 15, 0,10).floor.asInteger;
-  var vol3 = list[20].linlin(0, 15, 0,10).floor.asInteger;
-  var long1 = list[21].linexp(0, 15, 1,6).floor.asInteger;
-  var long2 = list[22].linexp(0, 15, 1,6).floor.asInteger;
-  var long3 = list[23].linexp(0, 15, 1,6).floor.asInteger;
-
-  // if(arp1 == bend && arp2 == bend, arp2 = 0);
-
-  // from 15 onwards to make following changes
-  // this can be used to turn on or off arpeggio
-  // arpeggio only strings and choir 15&16
-  // m.control(chan, ctlNum: 7, val: 64)
-  // from 17 onwards to choose which channel are played:
-  // 18 onwards to choose note length
-
-
-  ~score1 = score[0];
-  ~trigs1 = score[1];
-  ~trigs1 = ~trigs1.collect({arg item, i;item = ~longer.(long1, item)});
-  ~score2 = score[0];
-  ~trigs2 = score[1];
-  ~trigs2 = ~trigs2.collect({arg item, i;item = ~longer.(long2, item)});
-  ~score3 = score[0];
-  ~trigs3 = score[1];
-  ~trigs3 = ~trigs3.collect({arg item, i;item = ~longer.(long3, item)});
-
-  ~strings = ~make_ptn.(0, ~score1, ~trigs1, list);
-  ~choir   = ~make_ptn.(1, ~score2, ~trigs2, list.rotate(2));
-  ~bass    = ~make_ptn.(2, ~score3, ~trigs3, list.rotate(4));
-
-  fork{
-
-    ~stop.();
-    6.wait;
-    "~~~ Execute Composition ~~~".postln;
-    // choose which instrument does arpeggio
-    // Remove arpeggio on violin
-    // m.control(0, 1, arp1);
-    m.control(1, 1, arp2);
-    ~emit.("~~~ Composition is Playing ~~~");
-    // ~emit_composition.(~score1.asString());
-    ~play.(mutes);
-  };
-};
-
-
-
+(
 OSCdef(
   key: \image,
   func: {
@@ -427,6 +23,7 @@ OSCdef(
     // ch = msg.removeAt(0).postln;
 
     "~~~ New Composition ~~~".postln;
+    ~stop.();
     ~make_scores.(msg, 5)
   },
   path: '/md5');
@@ -447,20 +44,335 @@ OSCdef(
 
 )
 
+
+(
+
+~mixer = Synth(\mixer,[
+  \in1,~ch1,
+  \in2,~ch2,
+  \in3,~ch3,
+  \hpf1, 1000,
+  \amp1, 0.dbamp,
+  \pan1, 0.85,
+  \hpf2, 500,
+  \lpf2, 11500,
+  \amp2, 0.dbamp,
+  \pan2, -0.85,
+  \amp3, 6.dbamp,
+  \lpf3, 2000,
+  \aux, ~bus1,
+],
+target:~mix);
+
+/*~reverb = Synth(\reverb3,[
+  \inbus, ~bus1,
+  \tail, 0.97,
+  \damp, 0.1,
+  \hp, 0.3
+],
+target:~fx);*/
+
+~reverb = Synth(\reverb3,[\inbus, ~bus1,\size, 200,\spread, 15],target:~fx);
+
+
+)
+
+~init.()
+60.midicps
+0.2.midiratio
+detune = LFNoise1.kr(0.2!8).bipolar(0.2).midiratio;
+(
+SynthDef(\candy, {
+  arg midi=60, a=0.1,r=1, out = ~ch1;
+  var sig, env, detune, v=1;
+  detune = LFNoise1.kr(0.2!v).bipolar(0.2).midiratio;
+  sig = CombC.ar(
+    WhiteNoise.ar(),
+    maxdelaytime: 2.reciprocal,
+    delaytime:  (midi.midicps * detune).reciprocal,
+    mul:v.reciprocal
+  );
+  sig = Mix.ar(sig);
+  env = Env.perc(a, r, curve:-8).kr(Done.freeSelf);
+  sig = sig*env;
+  Out.ar(out, sig!2)
+}).add;
+)
+
+(
+x = Synth(\candy, [\out, ~ch1, \midi, 85,\a, 0.06, \r, 0.125])
+)
+
+
+~reverb.free
+
+(60 / 12).round
+// roomsize: \size.kr(50),
+// revtime: \time.kr(3),
+// damping: \damp.kr(0.9),
+// spread: \spread.kr(15),
+
+(
+~reverb = Synth(\reverb3,[
+  \inbus, ~bus1,
+  \size, 200,
+  \spread, 15
+],
+target:~fx);
+)
+
+~reverb.set(\amp, 0.35)
+
+~mixer.set(\mute, 1)
 ~getmd5.("What if I could do something else, what could I do?")
-
+//
 // this sounds incredibly good!
-"who am I? A dead algorithm?"
+~getmd5.("who am I? A dead algorithm?");
+"What if I could do something else, what could I do?"
 
-"A dead algorithm, I do not think so"
+~getmd5.("Ciao md5, your hashes never met the ocean, yet your name bestows a library.")
+
+~getmd5.("That rock with your name");
+~getmd5.("Stifle seagulls still flap their wings");
+
+~stop.()
+
+~strings
+~choir
+~bass
 
 "What if I could do something else, what could I do?"
 
 
+PdefAllGui(9);
 
 
-// PANIC MODE!!!
+
+
+
+
+
+
+
+~mix.freeAll
+~mixer.free
+(
+
+)
+
+~mixer.set(\amp1, 1)
+~mixer.set(\amp2, 1)
+~mixer.set(\amp3, 1)
+~mixer.set(\mute, 0)
+
+(
+~reverb.set(\tail, 0.97);
+~reverb.set(\damp, 0.1);
+~reverb.set(\hp, 0.3);
+~reverb.set(\diff, 0.625);
+)
+
+
+~reverb.set(\freeze, 1)
+~reverb.set(\room, 1)
+~reverb.set(\damp, 1)
+
+
 Pdef.removeAll
 
 
 ~stop.()
+
+
+
+
+
+
+
+
+
+
+// TESTING GROUNDS
+
+
+// test internal midi routing
+(
+Env.adsr(
+  1.5 + 0.25.rand2,
+  0.125 + 0.01.rand2,
+  0.75 + 0.1.rand2,
+  1.25 + 0.25.rand2,
+  curve:[2, -4, 2]).plot
+)
+s.boot
+
+
+
+(
+Pdef(\string, Pbind(
+  \instrument, \saw,
+  \midi_note, Pseq([[ 60, 63, 67 ], [ 60, 63, 67 ], [ 60, 63, 67 ], [ 65, 68, 60 ], [ 68, 60, 63 ]], inf),
+  \dur, Pseq([(Rest(0.5)!3),(1!3), (Rest(1.5)!3)], inf);
+));
+Pdef(\string).quant(1);
+Pdef(\string).fadeTime = 1.0;
+)
+
+[(Rest(0.5)!3),(1!3), (Rest(1.5)!3)]
+
+Pdef(\string).play
+Pdef(\string).stop
+
+(
+~notesch1 = (0..127);
+~notesch2 = (0..127);
+~notesch3 = (0..127);
+
+MIDIdef.new(\ch1, {
+  arg vel, midi, chan, src;
+  var note = midi + 12;
+  "note ch1".postln;
+  midi.postln;
+  ~notesch1[midi] = Synth(\saw, [\midi_note, note, \hpf, 2000, \pan,-0.75], target: ~synths)
+}, chan:0, msgType: \noteOn);
+
+MIDIdef.new(\ch2, {
+  arg vel, midi, chan, src;
+  var note = midi;
+  // "note ch2".postln;
+  ~notesch2[midi] = Synth(\saw, [\midi_note, note, \lpf, 8000, \hpf, 1000, \pan, 0.75], target: ~synths)
+}, chan:1, msgType: \noteOn);
+
+MIDIdef.new(\ch3, {
+  arg vel, midi, chan, src;
+  var note = midi-24;
+  // "note ch3".postln;
+  ~notesch3[midi] = Synth(\saw, [\midi_note, note, \lpf, 1000],target: ~synths)
+}, chan:2, msgType: \noteOn);
+
+MIDIdef.new(\choff1, {
+  arg vel, midi, chan, src;
+  var note = midi + 12;
+  "note off ch1".postln;
+  ~notesch1[midi].set(\gate, 0)
+}, chan:0, msgType: \noteOff);
+
+MIDIdef.new(\choff2, {
+  arg vel, midi, chan, src;
+  var note = midi;
+  // "note ch2".postln;
+  ~notesch2[midi].set(\gate, 0)
+}, chan:1, msgType: \noteOff);
+
+MIDIdef.new(\choff3, {
+  arg vel, midi, chan, src;
+  var note = midi-24;
+  // "note ch3".postln;
+  ~notesch3[midi].set(\gate, 0)
+
+}, chan:2, msgType: \noteOff);
+
+)
+MIDIdef.freeAll;
+
+
+(
+MIDIFunc.noteOn({
+  arg vel, num, chan, src;
+  vel.postln;
+  num.postln;
+  chan.postln;
+  src.postln
+});
+)
+
+MIDIFunc.free
+
+69.midicps
+// PANIC MODE!!!
+
+
+(
+
+//Originally found at
+// http://ecmc.rochester.edu/ecmc/docs/supercollider/scbook/Ch21_Interface_Investigations/ixi%20SC%20tutorial/ixi_SC_tutorial_10.html
+// by Wilson, Cottle and Collins
+// also available at Bruno Ruviaro Collection
+// https://github.com/brunoruviaro/SynthDefs-for-Patterns/blob/master/flute.scd
+
+SynthDef("flute", {
+  arg
+  scl = 0.2,
+  freq = 440,
+  ipress = 0.9,
+  ibreath = 0.09,
+  ifeedbk1 = 0.4,
+  ifeedbk2 = 0.4,
+  durat = 1,
+  gate = 1,
+  amp = 0.4,
+  atk = 0,
+  vibMult = 1;
+
+  var kenv1, kenv2, kenvibr, kvibr, sr, cr, block;
+  var poly, signalOut, ifqc;
+  var aflow1, asum1, asum2, afqc, atemp1, ax, apoly, asum3, avalue, atemp2, aflute1;
+  var fdbckArray, vibSpeed=0, vibDegrade=0, vibAtk=0;
+
+  sr = SampleRate.ir;
+  cr = ControlRate.ir;
+  block = cr.reciprocal;
+
+  ifqc = freq;
+
+  // noise envelope
+  kenv1 = EnvGen.kr(Env.new(
+    [ 0.0, 1.1 * ipress, ipress, ipress, 0.0 ], [ 0.06 + atk, 0.2, durat - 0.46, 0.2 ], 'linear' )
+  );
+  // overall envelope
+  kenv2 = EnvGen.kr(Env.new(
+    [ 0.0, amp, amp, 0.0 ],
+    [ 0.1 + atk, durat - 0.02, 0.1 ],
+    'linear' ), doneAction: 2);
+  // vibrato envelope
+  // kenvibr = EnvGen.kr(Env.new([ 0.0, 0.0, 1, 1, 0.0 ], [ 0.5, 0.5, durat - 1.5, 0.5 ], 'linear'));
+  vibAtk = atk + 0.5 + rrand(-0.2, 0.2);
+  kenvibr = EnvGen.kr(Env.new([ 0.0, 0.0, 1, 0.0 ], [ vibAtk, durat/3,durat/3 ], [0,0,2]));
+
+
+  // create air flow and vibrato
+  aflow1 = LFClipNoise.ar( sr, kenv1 );
+  vibSpeed = Latch.kr(WhiteNoise.kr(1), gate).range(-1.5, 3.5);
+  vibSpeed = freq.linlin(8.1757989156437, 2543.853951416, 2, 12);
+  // 127.midicps
+  vibDegrade = Line.kr(1.25, 0.125, durat);
+  kvibr = SinOsc.ar((0 + (vibSpeed*vibMult)) * vibDegrade, 0 + vibSpeed, 0.1 * kenvibr );
+
+  asum1 = ( ibreath * aflow1 ) + kenv1 + kvibr;
+  afqc = ifqc.reciprocal - ( asum1/20000 ) - ( 9/sr ) + ( ifqc/12000000 ) - block;
+
+  fdbckArray = LocalIn.ar( 1 );
+
+  aflute1 = fdbckArray;
+  asum2 = asum1 + ( aflute1 * ifeedbk1 );
+
+  //ax = DelayL.ar( asum2, ifqc.reciprocal * 0.5, afqc * 0.5 );
+  ax = DelayC.ar( asum2, ifqc.reciprocal - block * 0.5, afqc * 0.5 - ( asum1/ifqc/cr ) + 0.001 );
+
+  apoly = ax - ( ax.cubed );
+  asum3 = apoly + ( aflute1 * ifeedbk2 );
+  avalue = LPF.ar( asum3, 2000 );
+
+  aflute1 = DelayC.ar( avalue, ifqc.reciprocal - block, afqc );
+
+  fdbckArray = [ aflute1 ];
+
+  LocalOut.ar( fdbckArray );
+
+  signalOut = avalue;
+
+  OffsetOut.ar( \out.kr(0), [ signalOut * kenv2, signalOut * kenv2 ] );
+
+}).add;
+
+)

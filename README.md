@@ -15,6 +15,10 @@ MD5 (Message-Digest Algorithm 5) was designed by Ronald Rivest in 1992 as a cryp
 
 Despite its initial widespread adoption, MD5 has been considered cryptographically broken and unsuitable for further use since approximately 2005 ~ 2008. The National Institute of Standards and Technology formally deprecated MD5 for most uses in 2010
 
+### new built in strings
+
+> check line 427 and after to choose between sending midi or using internal synth
+
 
 ### Technical Architecture
 
@@ -98,3 +102,10 @@ Each hash produces a unique musical piece that reflects the solemn, memorial nat
 - C, E, G 
 - F, A, C 
 - G, B, D
+
+
+## Current upgrade to work scsynth instead of external synthesizer
+
+### TO DO
+1. check line 333
+2. remove 'dura' from make_scores

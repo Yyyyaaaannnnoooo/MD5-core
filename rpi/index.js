@@ -38,32 +38,48 @@ server.listen(3000, () => {
 });
 
 const osc = require("osc")
-const local_address = "127.0.0.1"
+const local_address = "0.0.0.0"
+const remote_address = "192.168.1.60"
 const local_port = 57121
 const remote_port = 57120
 
 // Create an osc.js UDP Port listening on port 57121.
 const udpPort = new osc.UDPPort({
-  localAddress: "127.0.0.1",
+  localAddress: local_address,
   localPort: local_port,
+  remoteAddress: "192.168.1.60", // Pi's IP
+  remotePort: remote_port, // SuperCollider's port
   metadata: true
 });
 
+
+
+
 // Listen for incoming OSC messages.
 udpPort.on("message", function (oscMsg, timeTag, info) {
-  console.log("An OSC message just arrived!");
+  // console.log("An OSC message just arrived!");
   const value = oscMsg["args"][0]["value"];
-  console.log(value);
+  // console.log(value);
   if (oscMsg["address"] === "/play") {
     io.emit("play", oscMsg["args"][0]["value"]);
+    body.push(value)
   }else if(oscMsg["address"] === "/composition"){
     // console.log(value);
     io.emit("composition", oscMsg["args"][0]["value"])
+    body.push(value)
   } else if(oscMsg["address"] === "/get"){
     // console.log(value);
     // const midi_ch = oscMsg["args"][0]["value"];
     // console.log(value);
+    if(header.length > 2){
+      header = []
+    }
+    header.push(value);
     make_md5_hash(value);
+  }
+
+  if(body.length > 20){
+    body.splice(0, 1);
   }
   // console.log("Remote info is: ", info);
   // console.log(oscMsg["args"][0]["value"]);
@@ -71,6 +87,8 @@ udpPort.on("message", function (oscMsg, timeTag, info) {
   // console.log(byte);
   // console.log(byte.length);
   // send_osc(byte)
+
+  post_message()
 });
 
 // Open the socket.
@@ -83,19 +101,27 @@ udpPort.on("ready", function () {
 });
 
 
+const header = []
+const body = []
 function make_md5_hash(value) {
   const md5 = MD5(value);
   // console.log(object);
 
   // here 
 
-  console.log(md5);
+  // console.log(md5);
+  header.push(md5);
   const hex = hexToBytesWithBuffer(md5);
-  console.log(hex);
+  // console.log(hex);
   // hex.unshift(midi_ch);
-  console.log(hex.length);
-  io.emit("hash", md5);
+  // console.log(hex.length);
+  // io.emit("hash", md5);
   send_osc(hex);
+}
+
+function post_message(){
+  const result = header.concat(body);
+  result.forEach(item=>console.log(item))
 }
 
 function hexToBytesWithBuffer(hex) {
@@ -114,13 +140,15 @@ function send_osc(msg) {
   udpPort.send({
     address: "/md5",
     args: make_message(msg)
-  }, local_address, remote_port);
+  });
 }
+
+
 function send_panic() {
   udpPort.send({
     address: "/panic",
     args: { type: 's', value: 'PANIC!' }
-  }, local_address, remote_port);
+  });
 }
 
 function emit_md5_parts(md5){
