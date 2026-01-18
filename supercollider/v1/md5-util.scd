@@ -1,6 +1,6 @@
 (
 s.waitForBoot({
-  Server.default.options.outDevice_("AudioBox USB 96");
+  // Server.default.options.outDevice_("AudioBox USB 96");
   MIDIClient.init;
   t = TempoClock.new(80/60).permanent_(true);
   m = MIDIOut(0);
@@ -10,8 +10,25 @@ s.waitForBoot({
 
   ~midiToNote = {
     arg midi;
-    var octave = (midi.asFloat / 12.0).round - 1;
-    String.makeNoteName(name: midi, octave:octave);
+    var result = "";
+    midi.postln;
+    // "is array: ".post; midi.isArray.postln;
+    if(midi.isArray)
+    {
+      midi.do({
+        arg note, i;
+        var octave = (note.asFloat / 12.0).round - 1;
+        var note_name = String.makeNoteName(name: note, octave:octave);
+        // note.postln;
+        // note_name.postln;
+        result = result + note_name;
+      });
+    }
+    {
+      var octave = (midi.asFloat / 12.0).round - 1;
+      result = String.makeNoteName(name: midi, octave:octave);
+    };
+    result
   };
 
   ~remote = NetAddr("127.0.0.1", 57121);
@@ -35,6 +52,11 @@ s.waitForBoot({
 
   d = Dictionary.newFrom([\C, 0,'C#', 1,\D, 2,'D#', 3,\Eb, 3,\E, 4,\F, 5,'F#', 6,\G, 7,'G#', 8,    \Ab, 8,\A, 9,\Bb, 10,\B, 11,]);
 
+  ~convert = {
+    arg string;
+    d.at(string.asSymbol);
+  };
+
   ~notes = [
     [
       ["C", "Eb", "G"],
@@ -57,6 +79,7 @@ s.waitForBoot({
     ],
     [
       ["D", "F", "A"],
+      ["C#", "F", "G#", "C"],
       ["C#", "F", "G#", "C"],
       ["A", "C#", "E"],
     ],
@@ -88,10 +111,7 @@ s.waitForBoot({
 
 
 
-  ~convert = {
-    arg string;
-    d.at(string.asSymbol);
-  };
+
 
   ~strings = [];
   ~viola = [];
@@ -102,6 +122,8 @@ s.waitForBoot({
   ~trigs2 = [];
   ~score3 = [];
   ~trigs3 = [];
+  ~score4 = [];
+  ~trigs4 = [];
   ~offset = {arg val=0; ([0,0.05,0.1,0.15]+val).choose};
   // ~offset.();
   ~mRest = {arg time; Rest(time)};
@@ -239,6 +261,32 @@ s.waitForBoot({
       \midi_note, patN,
       \dur, patD,
       \amp, patV, // velocity
+      \legato, Pfunc({
+        arg event;
+        var r = 1.5;
+        if(event.dur > 4){r = 1};
+        // r.postln;
+        r
+      }),
+      \a, Pfunc({
+        arg event;
+        var r=1.5;
+        if(event.dur < 1.5){r = event.dur - (event.dur*0.3333)  };
+        r
+      }),
+      \r, Pfunc({
+        arg event;
+        var r=1.25;
+        if(event.dur < 1.5){r =  (0.125.rand) + (event.dur*0.125).rand };
+        r
+      }),
+      \offset, Pfunc({
+        arg event;
+        var r = 0;
+        if(event.dur > 4){r = 2};
+        // r.postln;
+        r
+      }),
       \out, bus,
       \trace, Pfunc({
         arg ev;
@@ -269,7 +317,7 @@ s.waitForBoot({
     var t1 = trigs[0], t2 = trigs[1], t3 = trigs[2];
     var v1 = list[(0..9)], v2 = list[(10..19)], v3 = list[(20..29)];
     var chordOrNote = list[30]>7.5;
-    var p1, p2=nil, p3=nil, ret;
+    var p1=nil, p2=nil, p3=nil, ret;
 
     v1 = ~make_velocities.(v1).linlin(0.8, 1, -40.dbamp, -30.dbamp);
     v2 = ~make_velocities.(v2).linlin(0.8, 1, -40.dbamp, -30.dbamp);
@@ -292,6 +340,20 @@ s.waitForBoot({
     };
     [p1,p2,p3]
   };
+
+  ~make_mono_ptn = {
+    arg ch, notes, trigs, list;
+    var n1 = notes[0], n2 = notes[1], n3 = notes[2];
+    var t1 = trigs[0], t2 = trigs[1], t3 = trigs[2];
+    var v1 = list[(0..9)];
+    var p1=nil, p2=nil, p3=nil;
+
+    v1 = ~make_velocities.(v1).linlin(0.8, 1, -40.dbamp, -30.dbamp);
+    p1 = ~mpdef.(ch, "p1", ~mpseq.(notes), ~mpseq.(trigs), ~mpseq.(v1));
+    [p1,p2,p3]
+  };
+
+
 
   ~make_score = {
     arg list;
@@ -353,8 +415,8 @@ s.waitForBoot({
         arg item, i;
         var msg = i.asString()++": "++ item.asString();
         // uncomment below!
-        msg.postln;
-        ~emit_composition.(msg);
+        // msg.postln;
+        // ~emit_composition.(msg);
         (0.125 * 0.5).wait;
       })
     }.fork;
@@ -377,6 +439,9 @@ s.waitForBoot({
     var long1 = list[21].linexp(0, 15, 1,6).floor.asInteger;
     var long2 = list[22].linexp(0, 15, 1,6).floor.asInteger;
     var long3 = list[23].linexp(0, 15, 1,6).floor.asInteger;
+    var violin_score = ~make_violin_score.(list);
+    "LLLLIIISSSTTT".postln;
+    list.postln;
 
     // if(arp1 == bend && arp2 == bend, arp2 = 0);
 
@@ -400,6 +465,11 @@ s.waitForBoot({
     ~trigs3 = score[1];
     ~trigs3 = ~trigs3.collect({arg item,i;item = ~longer.(long3, item)});
 
+    // testing new arrangement tool
+
+    ~score1 = violin_score[0].postln;
+    ~trigs1 = violin_score[1].postln;
+
     // HeRE WE COULD ROTATE THE score for each instrument
     // and add
     /*~strings = ~make_midi_ptn.(0, ~score1, ~trigs1, list);
@@ -408,7 +478,9 @@ s.waitForBoot({
     */
 
     // not midi
-    ~strings = ~make_chord_ptn.(0, ~score1 + (12 + (2.rand * 12)), ~trigs1, list);
+    // ~strings = ~make_chord_ptn.(0, ~score1 + (12 + (2.rand * 12)), ~trigs1, list);
+    // ~strings = ~make_chord_ptn.(0, ~score1, ~trigs1, list);
+    ~strings = ~make_mono_ptn.(0, ~score1, ~trigs1, list);
     ~viola   = ~make_chord_ptn.(1, ~score2, ~trigs2, list.rotate(2));
     ~bass    = ~make_chord_ptn.(2, ~score3 - 24, ~trigs3, list.rotate(4));
 
@@ -439,26 +511,28 @@ s.waitForBoot({
   // ~init.();
 
   SynthDef(\saw, {
-    arg midi_note=55, dur=1, out=0, a=1.5, d=0.125, s=0.75, r=1.25;
-    var sig, env, detune;
+    arg midi_note=55, dur=1, out=0,offset=0.0,a=1.5, d=0.125, s=0.75, r=1.25, vibRate=5.5, vibDepth=0.005;
+    var sig, env, detune, freq=midi_note.midicps;
+    var vibrato = SinOsc.kr(vibRate) * vibDepth * freq;
     detune = LFNoise1.kr(0.2!6).bipolar(0.2).midiratio;
-    sig = LFSaw.ar(midi_note.midicps * detune);
+    sig = LFSaw.ar((midi_note.midicps + vibrato) * detune);
     // sig = LFSaw.ar(midi_note.midicps);
     sig = Mix.ar(sig);
     sig = CombC.ar(sig, 0.5, 0.1, 0.5);
-/*    sig = sig + CombC.ar(
-      in: WhiteNoise.ar(),
-      maxdelaytime: 10.reciprocal,
-      delaytime: (midi_note.midicps).reciprocal,
-      decaytime:0.125
+    /*    sig = sig + CombC.ar(
+    in: WhiteNoise.ar(),
+    maxdelaytime: 10.reciprocal,
+    delaytime: (midi_note.midicps).reciprocal,
+    decaytime:0.125
     );*/
     env = EnvGen.kr(
-      envelope: Env.adsr(
+      envelope: Env.dadsr(
+        offset.rand,
         a + 0.025.rand2,
         d + 0.01.rand2,
         s + 0.01.rand2,
         r + 0.025.rand2,
-        curve:[2, -4, 2]),
+        curve:[4, -4, 4]),
       gate: \gate.kr(1),
       doneAction: Done.freeSelf
     );
@@ -542,131 +616,3 @@ s.waitForBoot({
 
 )
 
-
-
-
-// GLOBAL PARAMETERS
-motif = ["up_minor_third", "down_step"] // small melodic cell
-global_range = (G3, E6) // violin comfort range
-phrase_length = random_choice([4, 8]) // chords per phrase
-
-// SELECT HARMONIC CONTEXT
-current_chord_set = random_choice(~notes) // one of your 7 chord arrays
-current_progression = current_chord_set[0:phrase_length] // or entire set
-
-// MAIN GENERATION LOOP
-output_notes = []
-previous_note = None
-
-for each chord in current_progression:
-
-  // 1. DECIDE PHRASE STRUCTURE FOR THIS CHORD
-  if random(0-1) < 0.4:
-    structure = "ARPEGGIO_THEN_LONG"
-  else:
-    structure = "MELODIC_PHRASE"  // 60% case - more lyrical
-
-  // 2. SELECT STARTING PITCH (considering voice leading)
-  if previous_note is None:
-    // First chord: start on a stable mid-range chord tone
-    start_note = select_closest_to_middleC(chord_tones(chord))
-  else:
-    // Apply voice leading: closest chord tone to previous note
-    start_note = find_closest_chord_tone(previous_note, chord)
-
-  // 3. GENERATE NOTES FOR THIS CHORD DURATION
-  chord_duration = 2.0 // seconds (for example)
-  chord_notes = []
-
-  if structure == "ARPEGGIO_THEN_LONG":
-    // 3A. Quick arpeggio (40% case)
-    arpeggio_length = random_choice([3, 4, 5, 6]) // number of notes
-    arpeggio_notes = generate_arpeggio(
-      chord: chord,
-      start_note: start_note,
-      length: arpeggio_length,
-      rhythm: "fast_tuplets" // 16ths or triplets
-    )
-
-    // 3B. Follow with long resolution note
-    // Choose a harmonically stable tone from current chord
-    resolution_note = select_stable_tone(chord, preference: "root_or_fifth")
-
-    // Ensure smooth voice leading from last arpeggio note
-    resolution_note = find_closest_chord_tone(
-      last(arpeggio_notes),
-      chord,
-      bias_toward: "root_or_fifth"
-    )
-
-    // Build final sequence: arpeggio + long note
-    chord_notes = arpeggio_notes + [resolution_note]
-
-    // Set durations: fast for arpeggio, long for resolution
-    durations = [0.1, 0.1, 0.1, 0.1, 1.6] // example: 4 fast + 1 long
-
-  else: // structure == "MELODIC_PHRASE" (60% case)
-    // 3C. Lyrical, expressive line (not just arpeggio)
-    // This is where the real "composition" happens
-
-    // Option 1: Simple expressive line (most common)
-    // Create a small melodic contour using chord tones and passing tones
-    num_notes = random_choice([2, 3, 4]) // fewer notes, more expressive
-    chord_notes = generate_melodic_contour(
-      chord: chord,
-      start_note: start_note,
-      num_notes: num_notes,
-      contour_shape: random_choice(["arch", "descend", "ascend"]),
-      allow_passing_tones: true
-    )
-
-    // Option 2: Single long expressive note (with ornament)
-    if random() < 0.3: // 30% of melodic phrases
-      chord_notes = [start_note]
-      // Add ornamentation: vibrato, slight pitch bend, dynamic swell
-      ornament = random_choice(["vibrato", "crescendo", "slight_fall"])
-
-    // Option 3: Motif-based development
-    if should_develop_motif(): // e.g., every 3rd chord
-      chord_notes = apply_motif(
-        motif: motif,
-        starting_pitch: start_note,
-        chord_context: chord
-      )
-
-    // Set expressive durations
-    durations = generate_expressive_rhythm(num_notes: length(chord_notes))
-    // e.g., [0.7, 0.1, 1.2] - varied, rubato-like
-
-  // 4. APPLY VIOLINISTIC ARTICULATION
-  for each note in chord_notes:
-    articulation = select_articulation(
-      note_index: index,
-      note_duration: durations[index],
-      is_last_note: (index == last_index)
-    )
-    // Examples: "legato", "portato", "slight_staccato", "accent"
-
-  // 5. ENSURE MONOPHONY (CRITICAL)
-  // Since we're generating multiple notes per chord,
-  // we need to sequence them properly
-  for i in range(length(chord_notes)):
-    note_event = {
-      pitch: chord_notes[i],
-      duration: durations[i],
-      articulation: articulations[i],
-      start_time: cumulative_time,
-      chord_context: chord // keep track for harmonic analysis
-    }
-    output_notes.append(note_event)
-    cumulative_time += durations[i]
-
-  // 6. PREPARE FOR NEXT CHORD
-  previous_note = last(chord_notes) // for voice leading to next chord
-
-// 7. ADD PHRASE-LEVEL SHAPING
-apply_phrase_dynamics(output_notes) // crescendo/decrescendo
-apply_microtiming_variations(output_notes) // humanization
-add_rests_between_phrases(output_notes) // breathing space
-
-return output_notes

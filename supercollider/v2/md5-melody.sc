@@ -24,7 +24,9 @@ OSCdef(
 
     "~~~ New Composition ~~~".postln;
     ~stop.();
-    ~make_scores.(msg)
+    // ~make_scores.(msg)
+    ~createComposition.(msg)
+
   },
   path: '/md5');
 
@@ -137,6 +139,9 @@ target:~fx);
 
 ~stop.()
 
+Pdef.removeAll
+s.meter
+1429.98 / 60
 ~strings
 ~choir
 ~bass
