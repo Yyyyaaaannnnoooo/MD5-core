@@ -1,12 +1,16 @@
 # MD5-core
 
-MD5 Core is Pico Live Coding environment using the MD5 hashing algorithm. [Developed for the Hack the Promise Festival](https://hackthepromise.org/festival-2025/programm/)
+MD5 Core is Pico Live Coding environment using the MD5 hashing algorithm to build musical compositions.
 
+> [Initially Developed for the Hack the Promise Festival](https://hackthepromise.org/festival-2025/programm/)
 
+## Current status
 
-This work explores the history and cryptographic *__retirement__* of the MD5 algorithm. It creates poetic farewell to the MD5 hashing function by transforming text inputs into musical requiems.
+the project is in development, focusing on two things: 
+- buidling a better melody generator
+- make it run on a raspberry pi
 
-> [Short Video Explanation](https://youtu.be/TZOxIBP_L-o)
+The client input interface is currenttly broken, to favor terminal based interface. The terminal does not take text inputs at the moment.
 
 ### The Story of MD5
 
@@ -14,6 +18,15 @@ MD5 (Message-Digest Algorithm 5) was designed by Ronald Rivest in 1992 as a cryp
 
 
 Despite its initial widespread adoption, MD5 has been considered cryptographically broken and unsuitable for further use since approximately 2005 ~ 2008. The National Institute of Standards and Technology formally deprecated MD5 for most uses in 2010
+
+
+This work explores the history and cryptographic *__retirement__* of the MD5 algorithm. It creates poetic farewell to the MD5 hashing function by transforming text inputs into musical requiems.
+
+> [Short Video Explanation](https://youtu.be/TZOxIBP_L-o)
+
+### How it works
+
+
 
 ### new built in strings
 
