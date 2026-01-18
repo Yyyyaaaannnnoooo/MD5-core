@@ -1,6 +1,8 @@
-# MD5-core
+# Ciao MD5
 
-MD5 Core is Pico Live Coding environment using the MD5 hashing algorithm to build musical compositions.
+> Pico Live Coding environment using the MD5 hashing algorithm to build musical compositions.
+
+This is a Pico Live Coding environment based on the MD5 hashing algorithm. It takes a text of any length and turns it into a 128-bit hash, which is then transformed into a musical score. This work explores the cryptographic retirement of MD5. Designed by Ronald Rivest in 1992, MD5 was a widely adopted cryptographic hash function. However it was formally deprecated by the National Institute of Standards and Technology in 2010. And thus turning it into a dead algorithm.
 
 > [Initially Developed for the Hack the Promise Festival](https://hackthepromise.org/festival-2025/programm/)
 
@@ -18,11 +20,13 @@ MD5 (Message-Digest Algorithm 5) was designed by Ronald Rivest in 1992 as a cryp
 
 
 Despite its initial widespread adoption, MD5 has been considered cryptographically broken and unsuitable for further use since approximately 2005 ~ 2008. The National Institute of Standards and Technology formally deprecated MD5 for most uses in 2010
+By transforming text into musical requiems, this work composes poetic farewells to say goodbye to the MD5 algorithm.
 
-
-This work explores the history and cryptographic *__retirement__* of the MD5 algorithm. It creates poetic farewell to the MD5 hashing function by transforming text inputs into musical requiems.
 
 > [Short Video Explanation](https://youtu.be/TZOxIBP_L-o)
+
+
+
 
 ### How it works
 
@@ -43,7 +47,7 @@ MD5 Core consists of three main components:
 
 3. MIDI Composition: The hash is sent via OSC protocol to SuperCollider, which generates a musical composition based on requiem chords. The resulting composition is served over MIDI
 
-Each hash produces a unique musical piece that reflects the solemn, memorial nature of a funeral mass.
+Each hash produces a unique musical piece that reflects the solemn nature of a funeral mass.
 
 
 ## Requiem Chords:
