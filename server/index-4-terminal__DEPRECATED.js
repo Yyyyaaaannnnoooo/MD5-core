@@ -46,7 +46,7 @@ udpPort.open();
 let interval = null;
 // // When the port is read, send an OSC message to, say, SuperCollider
 udpPort.on("ready", function () {
-  console.log("Connected with SuperCollider");
+  console.log("Connecting with SuperCollider");
   // send_osc(msg)
   // interval = setInterval(()=>{
   //   console.log("send message");

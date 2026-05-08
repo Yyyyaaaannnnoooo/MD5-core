@@ -1,14 +1,20 @@
 (
 s.waitForBoot({
-  // Server.default.options.outDevice_("AudioBox USB 96");
 
-  // MIDI IS DEPRECATED!
+  ///~~~ SERVER CLEANUP ~~~///
+  ~cleanup = {
+    "DO cleanup".postln;
+    ServerBoot.removeAll;
+    ServerQuit.removeAll;
+    ServerTree.removeAll;
+    CmdPeriod.removeAll;
+    Pdef.removeAll;
+    OSCdef.freeAll;
+    ~remote.sendMsg("/fail", "supercollider quit!");
+  };
+  ~cleanup.();
 
-  MIDIClient.init;
-  t = TempoClock.new(80/60).permanent_(true);
-  m = MIDIOut(0);
-  m = MIDIOut.newByName("IAC Driver", "Bus 1");
-
+  ServerQuit.add(~cleanup);
   ~instruments = [ "Violin", "Viola", "Cello"];
 
   ~midi_to_note = {
@@ -138,218 +144,7 @@ s.waitForBoot({
   ~score4 = [];
   ~trigs4 = [];
   ~offset = {arg val=0; ([0,0.05,0.1,0.15]+val).choose};
-  // ~offset.();
   ~mRest = {arg time; Rest(time)};
-
-
-  ~play = {
-    arg mutes;
-    "play".postln;
-    mutes.postln;
-    // x o o
-    // o x o
-    // o o x
-    // x x o
-    // x o x
-    // x x x
-    switch(
-      mutes,
-      0, {
-        // "play strings".postln;
-        ~strings.do({arg item; item.play})
-      },
-      1, {
-        ~viola.do({arg item; item.play})
-      },
-      2, {
-        ~bass.do({arg item; item.stop})
-      },
-      3, {
-        fork{
-          ~strings.do({arg item; item.play});
-          2.wait;
-          ~viola.do({arg item; item.play})
-        }
-      },
-      4, {
-        fork{
-          ~viola.do({arg item; item.play});
-          2.wait;
-          ~bass.do({arg item; item.play});
-        }
-      },
-      5, {
-        fork{
-          ~strings.do({arg item; item.play});
-          2.wait;
-          ~bass.do({arg item; item.play});
-        }
-      },
-      6, {
-        fork{
-          ~strings.do({arg item; item.play});
-          2.wait;
-          ~viola.do({arg item; item.play});
-          2.wait;
-          ~bass.do({arg item; item.play});
-        }
-      },
-      7, {
-        fork{
-          ~strings.do({arg item; item.play});
-          2.wait;
-          ~viola.do({arg item; item.play});
-          2.wait;
-          ~bass.do({arg item; item.play});
-
-        }
-      },
-      8, {
-        fork{
-          ~strings.do({arg item; item.play});
-          2.wait;
-          ~viola.do({arg item; item.play});
-          2.wait;
-          ~bass.do({arg item; item.play});
-
-        }
-      },
-      9, {
-        fork{
-          ~strings.do({arg item; item.play});
-          2.wait;
-          ~viola.do({arg item; item.play});
-          2.wait;
-          ~bass.do({arg item; item.play});
-
-        }
-      },
-    );
-  };
-
-  // STOP
-  ~stop = {
-    // Pdef.removeAll;
-    ~strings.do({arg item; item.stop});
-    ~viola.do({arg item; item.stop});
-    ~bass.do({arg item; item.stop});
-  };
-
-  ~make_velocities = {
-    arg list;
-    var result;
-    result = list.linlin(0, 15, 0.8, 1);
-  };
-
-  ~stutter = {
-    arg number, score, trigs;
-    score = score.dupEach(number);
-    trigs = trigs.dupEach(number) * number.reciprocal;
-    [score, trigs];
-  };
-
-  ~longer = {
-    arg number, trigs;
-    trigs = trigs * number;
-    // trigs.postln;
-    trigs;
-  };
-
-  ~mpseq = {arg list;  Pseq(list, inf)};
-
-  // MAKE MIDI pattern
-  ~mmn = {
-    arg channel, name=nil, patN, patD, patV;
-    var pat_name = "ch"++channel++name.asString;
-    pat_name = pat_name.asSymbol;
-    Pdef(pat_name).clear;
-    Pdef(pat_name, Pbind(
-      \type,\midi,
-      \midiout,m,\midicmd,\noteOn,\chan,channel,
-      \midinote, patN,
-      \dur, patD,
-      \amp, patV, // velocity
-    ));
-    Pdef(pat_name).quant_(1);
-    Pdef(pat_name).fadeTime = 1.0;
-  };
-
-  ~make_midi_ptn = {
-    arg ch, notes, trigs, list;
-    var n1 = notes[0], n2 = notes[1], n3 = notes[2];
-    var t1 = trigs[0], t2 = trigs[1], t3 = trigs[2];
-    var v1 = list[(0..9)], v2 = list[(10..19)], v3 = list[(20..29)];
-    var p1, p2, p3, ret;
-    v1 = ~make_velocities.(v1);
-    v2 = ~make_velocities.(v2);
-    v3 = ~make_velocities.(v3);
-
-    p1 = ~mmn.(ch, "p1", ~mpseq.(n1), ~mpseq.(t1), ~mpseq.(v1));
-    p2 = ~mmn.(ch, "p2", ~mpseq.(n2), ~mpseq.(t2), ~mpseq.(v2));
-    p3 = ~mmn.(ch, "p3", ~mpseq.(n3), ~mpseq.(t3), ~mpseq.(v3));
-    [p1, p2, p3]
-  };
-  // Patterns for Sc SynthDefs
-  ~mpdef = {
-    arg channel, name=nil, patN, patD, patV;
-    var pat_name = "string"++channel++name.asString;
-    var bus = ~outs[channel];
-    pat_name = pat_name.asSymbol;
-    pat_name.postln;
-    Pdef(pat_name).clear;
-    Pdef(pat_name, Pbind(
-      \instrument,\saw,\group, ~synths,
-      \midi_note, patN,
-      \dur, patD,
-      \amp, patV, // velocity
-      \legato, Pfunc({
-        arg event;
-        var r = 1.5;
-        if(event.dur > 4){r = 1};
-        // r.postln;
-        r
-      }),
-      \a, Pfunc({
-        arg event;
-        var r=1.5;
-        if(event.dur < 1.5){r = event.dur - (event.dur*0.3333)  };
-        r
-      }),
-      \r, Pfunc({
-        arg event;
-        var r=1.25;
-        if(event.dur < 1.5){r =  (0.125.rand) + (event.dur*0.125).rand };
-        r
-      }),
-      \offset, Pfunc({
-        arg event;
-        var r = 0;
-        if(event.dur > 4){r = 2};
-        // r.postln;
-        r
-      }),
-      \out, bus,
-      \trace, Pfunc({
-        arg ev;
-        var midi = ~midi_to_note.(ev[\midi_note]);
-        var inst = ~instruments[channel];
-        if(ev[\dur].asString.contains("Rest") == false)
-        {
-
-          // ~emit_composition.("~~~~~~~~~~~~~~~~~~~~~~~");
-          ~emit_composition.((inst ++ " >>> " ++ midi));
-          // ~emit_composition.(("duration >>> " ++ ev[\dur].asString));
-        }{
-          // ~emit_composition.("~~~~~~~~~~~~~~~~~~~~~~~");
-          "REST".postln;
-          // never ever remove the else statement from trace it fails the pdef silently!!!!
-        }
-
-      }),
-    ));
-    Pdef(pat_name).quant_(1);
-    Pdef(pat_name).fadeTime = 1.0;
-  };
 
   // new score gen
   ~analyze_and_map = {
@@ -418,35 +213,35 @@ s.waitForBoot({
       // Generate musical material based on texture
       // texture.postln;
       switch(texture,
-        // \fast_arpeggio, {
-        //   // Rapid, energetic arpeggio
-        //   var arp = ~generate_arpeggio.(
-        //     chord: currentChordMIDI,
-        //     numNotes: 8,
-        //     octaveRange: 2,
-        //     rhythm: \sixteenths,
-        //     tempo: 4.0,
-        //     list:~input,
-        //     index:i,
-        //   );
-        //   midiNotes = midiNotes ++ arp[0];
-        //   durations = durations ++ arp[1];
-        // },
-        //
-        // \arpeggio, {
-        //   // Moderate arpeggio
-        //   var arp = ~generate_arpeggio.(
-        //     chord: currentChordMIDI,
-        //     numNotes: 8,
-        //     octaveRange: 1,
-        //     rhythm: \eighth_triplet,
-        //     tempo: 4.0,
-        //     list:~input,
-        //     index:i,
-        //   );
-        //   midiNotes = midiNotes ++ arp[0];
-        //   durations = durations ++ arp[1];
-        // },
+        \fast_arpeggio, {
+          // Rapid, energetic arpeggio
+          var arp = ~generate_arpeggio.(
+            chord: currentChordMIDI,
+            numNotes: 8,
+            octaveRange: 2,
+            rhythm: \sixteenths,
+            tempo: 4.0,
+            list:input,
+            index:i,
+          );
+          midiNotes = midiNotes ++ arp[0];
+          durations = durations ++ arp[1];
+        },
+
+        \arpeggio, {
+          // Moderate arpeggio
+          var arp = ~generate_arpeggio.(
+            chord: currentChordMIDI,
+            numNotes: 8,
+            octaveRange: 1,
+            rhythm: \eighth_triplet,
+            tempo: 4.0,
+            list:input,
+            index:i,
+          );
+          midiNotes = midiNotes ++ arp[0];
+          durations = durations ++ arp[1];
+        },
         // midiNotes.postln;
         \melodic_fast, {
           // Single melodic line with passing tones
@@ -565,12 +360,6 @@ s.waitForBoot({
     // Add slight ritardando at end of arpeggio
     durs[durs.size-1] = durs.last * 1.5;
 
-
-
-    // notes = [notes, notes.copy, notes.copy];
-    // this creates dummy sequences that only rest aka no note is played
-    // durs = [durs, [Rest(1)], [Rest(1)]];
-
     [notes, durs];
   };
 
@@ -674,11 +463,7 @@ s.waitForBoot({
       var chord_sel = list[i];
       var chord = chordProg.wrapAt(chord_sel);
       var dur = durs.choose;
-      // var rest = rests.choose;
-      // "SELECTED CHORD".postln;
-      // chord.postln;
       chord = ~chord_to_midi.(chord);
-      // chord.postln;
       chord = chord + to_add;
 
       notes = notes.add(chord);
@@ -686,19 +471,6 @@ s.waitForBoot({
 
     [notes, durs];
   };
-
-
-
-  ~make_ptn2 = {
-    arg ch, notes, trigs, list;
-    var v1 = list[(0..9)];
-    var p1=nil, p2=nil, p3=nil;
-    notes.postln;
-    v1 = ~make_velocities.(v1).linlin(0.8, 1, -40.dbamp, -30.dbamp);
-    p1 = ~mpdef.(ch, "p1", ~mpseq.(notes), ~mpseq.(trigs), ~mpseq.(v1));
-    [p1,p2,p3]
-  };
-
 
   // Generate and play the composition
   ~createComposition = {
@@ -715,70 +487,209 @@ s.waitForBoot({
     var long2 = input[22].linexp(0, 15, 1,3).floor.asInteger;
     var long3 = input[23].linexp(0, 15, 1,2).floor.asInteger;
 
-    "make composition".postln;
-
-    // Visualize
-    // ~visualizeMapping.(~input, ~notes);
-
-    "\n=== GENERATED COMPOSITION ===".postln;
+    "=== GENERATED COMPOSITION ===".postln;
     "Total notes: %".format(midiNotes.size).postln;
     "Total duration: % seconds".format(durations.sum.round(0.01)).postln;
 
     trigs1 = violin_score[1].collect({arg item,i;item = ~longer.(long1, item)});
     trigs2 = viola_score[1].collect({arg item,i;item = ~longer.(long2, item)});
-    // trigs3 = bass_score[1].collect({arg item,i;item = ~longer.(long3, item)});
     trigs3 = bass_score[1];
 
     ~strings = ~make_ptn2.(0, violin_score[0], trigs1, input);
     ~viola = ~make_ptn2.(1, viola_score[0], trigs2, input.rotate(2));
     ~bass = ~make_ptn2.(2, bass_score[0], trigs3, input.rotate(4));
-    // ~strings = ~make_mono_ptn.(0, ~score1, ~trigs1, list);
-    // ~viola   = ~make_chord_ptn.(1, ~score2, ~trigs2, list.rotate(2));
-    // ~bass    = ~make_chord_ptn.(2, ~score3 - 24, ~trigs3, list.rotate(4));
 
     fork{
       ~stop.();
       6.wait;
       "~~~ Execute Composition ~~~".postln;
-      // m.control(1, 1, arp2);
       ~emit.("~~~ Composition is Playing ~~~");
-      // ~emit_composition.(~score1.asString());
       ~play.(mutes);
     };
 
   };
 
+  ~play = {
+    arg mutes;
+    switch(
+      mutes,
+      0, {
+        ~strings.do({arg item; item.play})
+      },
+      1, {
+        ~viola.do({arg item; item.play})
+      },
+      2, {
+        ~bass.do({arg item; item.stop})
+      },
+      3, {
+        fork{
+          ~strings.do({arg item; item.play});
+          2.wait;
+          ~viola.do({arg item; item.play})
+        }
+      },
+      4, {
+        fork{
+          ~viola.do({arg item; item.play});
+          2.wait;
+          ~bass.do({arg item; item.play});
+        }
+      },
+      5, {
+        fork{
+          ~strings.do({arg item; item.play});
+          2.wait;
+          ~bass.do({arg item; item.play});
+        }
+      },
+      6, {
+        fork{
+          ~strings.do({arg item; item.play});
+          2.wait;
+          ~viola.do({arg item; item.play});
+          2.wait;
+          ~bass.do({arg item; item.play});
+        }
+      },
+      7, {
+        fork{
+          ~strings.do({arg item; item.play});
+          2.wait;
+          ~viola.do({arg item; item.play});
+          2.wait;
+          ~bass.do({arg item; item.play});
 
-  ~init = {
-    s.newBusAllocators;
-    ~mic = Bus.audio(s, 1);
-    ~bus1 = Bus.audio(s, 2);
-    ~ch1 = Bus.audio(s, 2);
-    ~ch2 = Bus.audio(s, 2);
-    ~ch3 = Bus.audio(s, 2);
-    ~synths = Group.new();
-    ~mix = Group.after(~synths);
-    ~fx = Group.after(~mix);
-    ~outs = [~ch1, ~ch2, ~ch3];
+        }
+      },
+      8, {
+        fork{
+          ~strings.do({arg item; item.play});
+          2.wait;
+          ~viola.do({arg item; item.play});
+          2.wait;
+          ~bass.do({arg item; item.play});
+
+        }
+      },
+      9, {
+        fork{
+          ~strings.do({arg item; item.play});
+          2.wait;
+          ~viola.do({arg item; item.play});
+          2.wait;
+          ~bass.do({arg item; item.play});
+
+        }
+      },
+    );
   };
 
-  // ~init.();
+  // STOP
+  ~stop = {
+    // Pdef.removeAll;
+    ~strings.do({arg item; item.stop});
+    ~viola.do({arg item; item.stop});
+    ~bass.do({arg item; item.stop});
+  };
+
+  ~make_velocities = {
+    arg list;
+    var result;
+    result = list.linlin(0, 15, 0.8, 1);
+  };
+
+  ~stutter = {
+    arg number, score, trigs;
+    score = score.dupEach(number);
+    trigs = trigs.dupEach(number) * number.reciprocal;
+    [score, trigs];
+  };
+
+  ~longer = {
+    arg number, trigs;
+    trigs = trigs * number;
+    trigs;
+  };
+
+  ~mpseq = {arg list;  Pseq(list, inf)};
+
+  ~make_ptn2 = {
+    arg ch, notes, trigs, list;
+    var v1 = list[(0..9)];
+    var p1=nil, p2=nil, p3=nil;
+    notes.postln;
+    v1 = ~make_velocities.(v1).linlin(0.8, 1, -40.dbamp, -30.dbamp);
+    p1 = ~mpdef.(ch, "p1", ~mpseq.(notes), ~mpseq.(trigs), ~mpseq.(v1));
+    [p1,p2,p3]
+  };
+
+  // Patterns for Sc SynthDefs
+  ~mpdef = {
+    arg channel, name=nil, patN, patD, patV;
+    var pat_name = "string"++channel++name.asString;
+    var bus = ~outs[channel];
+    pat_name = pat_name.asSymbol;
+    pat_name.postln;
+    Pdef(pat_name).clear;
+    Pdef(pat_name, Pbind(
+      \instrument,\saw,\group, ~synths,
+      \midi_note, patN,
+      \dur, patD,
+      \amp, patV, // velocity
+      \vibRate, Pwhite(3.5, 6.5, inf),
+      \vibDepth, Pwhite(0.0025, 0.007, inf),
+      \legato, Pfunc({
+        arg event;
+        var r = 1.5;
+        if(event.dur > 4){r = 1};
+        r
+      }),
+      \a, Pfunc({
+        arg event;
+        var r=1.5;
+        if(event.dur < 1.5){r = event.dur - (event.dur*0.3333)};
+        r
+      }),
+      \r, Pfunc({
+        arg event;
+        var r=1.25;
+        if(event.dur < 1.5){r =  (0.125.rand) + (event.dur*0.125).rand };
+        r
+      }),
+      \offset, Pfunc({
+        arg event;
+        var r = 0;
+        if(event.dur > 4){r = 2}{r = 1};
+        r
+      }),
+      \out, bus,
+      \trace, Pfunc({
+        arg ev;
+        var midi = ~midi_to_note.(ev[\midi_note]);
+        var inst = ~instruments[channel];
+        if(ev[\dur].asString.contains("Rest") == false)
+        {
+          ~emit_composition.((inst ++ " >>> " ++ midi));
+        }{"REST".postln;}
+      }),
+    ));
+    Pdef(pat_name).quant_(1);
+    Pdef(pat_name).fadeTime = 1.0;
+  };
+
+  s.sync;
 
   SynthDef(\saw, {
-    arg midi_note=55, dur=1, out=0,offset=0.0,a=1.5, d=0.125, s=0.75, r=1.25, vibRate=5.5, vibDepth=0.005;
+    arg midi_note=55, dur=1, out=0,
+    offset=0.0,a=1.5, d=0.125,
+    s=0.75, r=1.25, vibRate=5.5, vibDepth=0.005;
     var sig, env, detune, freq=midi_note.midicps;
     var vibrato = SinOsc.kr(vibRate) * vibDepth * freq;
     detune = LFNoise1.kr(0.2!6).bipolar(0.2).midiratio;
     sig = LFSaw.ar((midi_note.midicps + vibrato) * detune);
-    // sig = LFSaw.ar(midi_note.midicps);
     sig = Mix.ar(sig);
     sig = CombC.ar(sig, 0.5, 0.1, 0.5);
-    /*    sig = sig + CombC.ar(
-    in: WhiteNoise.ar(),
-    maxdelaytime: 10.reciprocal,
-    delaytime: (midi_note.midicps).reciprocal,
-    decaytime:0.125
-    );*/
     env = EnvGen.kr(
       envelope: Env.dadsr(
         (offset * 0.125) + offset.rand,
@@ -823,27 +734,7 @@ s.waitForBoot({
     Out.ar(0, snd * \mute.kr(1).clip(0, 1));
   }).add;
 
-  SynthDef(\reverb, {
-    arg inbus=~bus1, out=0;
-    var input, sig;
-    input = In.ar(inbus, 2);
-    sig = MiVerb.ar(input,
-      \tail.kr(0.999), 1,
-      \damp.kr(0), \hp.kr(0.3),
-      \freeze.kr(0), \diff.kr(0.625));
-    Out.ar(out, sig);
-  }).add;
-
-  SynthDef(\reverb2, {
-    arg inbus=~bus1, out=0;
-    var input, sig;
-    input = In.ar(inbus, 2);
-    sig = FreeVerb2.ar(
-      input[0], input[1], 1,
-      \room.kr(0.75),
-      \damp.kr(0));
-    Out.ar(out, sig);
-  }).add;
+  s.sync;
 
   SynthDef(\reverb3, {
     arg inbus=~bus1, out=0;
@@ -865,10 +756,104 @@ s.waitForBoot({
     Out.ar(out, sig*\amp.kr(0.25));
   }).add;
 
+  ~init = {
+    s.newBusAllocators;
+    ~mic = Bus.audio(s, 1);
+    ~bus1 = Bus.audio(s, 2);
+    ~ch1 = Bus.audio(s, 2);
+    ~ch2 = Bus.audio(s, 2);
+    ~ch3 = Bus.audio(s, 2);
+    ~synths = Group.new();
+    ~mix = Group.after(~synths);
+    ~fx = Group.after(~mix);
+    ~outs = [~ch1, ~ch2, ~ch3];
+  };
+
+
+
+  ~init_audio = {
+    ~mixer = Synth(\mixer,[
+      \in1,~ch1,
+      \in2,~ch2,
+      \in3,~ch3,
+      \hpf1, 1000,
+      \amp1, 0.dbamp,
+      \pan1, 0.85,
+      \hpf2, 500,
+      \lpf2, 11500,
+      \amp2, 0.dbamp,
+      \pan2, -0.85,
+      \amp3, 6.dbamp,
+      \lpf3, 2000,
+      \aux, ~bus1,
+    ],
+    target:~mix);
+    ~reverb = Synth(\reverb3,[\inbus, ~bus1,\size, 200,\spread, 15],target:~fx);
+  };
+
+  ~init.();
+  s.sync;
+  ~init_audio.();
+  s.sync;
+
+  OSCdef(
+    key: \image,
+    func: {
+      arg msg, time, addr, recvPort;
+      var ch = 0;
+      msg.postln;
+      msg.removeAt(0);
+      "~~~ New Composition ~~~".postln;
+      ~stop.();
+      Pdef.removeAll;
+      ~createComposition.(msg)
+    },
+    path: '/md5');
+
+  OSCdef(
+    key: \panic,
+    func: {
+      arg msg, time, addr, recvPort;
+      var ch = 0;
+      "~~~ PANIC MODE! ~~~".postln;
+      ~emit_composition.("~~~ PANIC MODE! ~~~");
+      Pdef.removeAll;
+    },
+    path: '/panic');
+
+  OSCdef(
+    key: \ready,
+    func: {
+      arg msg, time, addr, recvPort;
+      var ch = 0;
+      ~emit.("NODE >>> SUPERCOLLIDER. || CONNECTION DONE!");
+      "NODE >>> SUPERCOLLIDER. || CONNECTION DONE!".postln;
+      ~startup.stop;
+    },
+    path: '/ready');
+
+  ~startup = {
+    loop{
+      ~remote.sendMsg("/startup", ">>> SUPERCOLLIDER READY TO RECEIVE MD5");
+      "waiting for node server....".postln;
+      0.5.wait;
+    }
+  }.fork;
+
+
 
 });
 
 )
 
+
 // Pdef.debug
+
+
+(
+
+)
+
+
+
 

@@ -24,6 +24,7 @@ OSCdef(
 
     "~~~ New Composition ~~~".postln;
     ~stop.();
+    Pdef.removeAll;
     // ~make_scores.(msg)
     ~createComposition.(msg)
 
@@ -44,7 +45,27 @@ OSCdef(
   },
   path: '/panic');
 
+OSCdef(
+  key: \ready,
+  func: {
+    arg msg, time, addr, recvPort;
+    var ch = 0;
+    ~emit.("NODE >>> SUPERCOLLIDER. || CONNECTION DONE!");
+    ~startup.stop;
+  },
+  path: '/ready');
+
+~startup = {
+  loop{
+    ~remote.sendMsg("/startup", ">>> SUPERCOLLIDER READY TO RECEIVE MD5");
+    "waiting for node server....".postln;
+    0.5.wait;
+  }
+}.fork;
+
 )
+
+~startup.stop
 ~init.()
 
 (
@@ -66,18 +87,33 @@ OSCdef(
 ],
 target:~mix);
 
-/*~reverb = Synth(\reverb3,[
-  \inbus, ~bus1,
-  \tail, 0.97,
-  \damp, 0.1,
-  \hp, 0.3
-],
-target:~fx);*/
-
 ~reverb = Synth(\reverb3,[\inbus, ~bus1,\size, 200,\spread, 15],target:~fx);
 
 
 )
+
+
+
+~mixer.set(\mute, 1)
+~getmd5.("What if I could do something else?")
+//
+// this sounds incredibly good!
+~getmd5.("who am I? A dead algorithm?");
+"What if I could do something else, what could I do?"
+
+~getmd5.("Ciao md5, your hashes never met the ocean, yet your name bestows a library.")
+
+~getmd5.("That rock with your name");
+~getmd5.("Stifle seagulls still flap their wings");
+
+~stop.()
+
+Pdef.removeAll
+
+
+
+
+
 
 
 60.midicps
@@ -124,38 +160,6 @@ target:~fx);
 )
 
 ~reverb.set(\amp, 0.35)
-
-~mixer.set(\mute, 1)
-~getmd5.("What if I could do something else?")
-//
-// this sounds incredibly good!
-~getmd5.("who am I? A dead algorithm?");
-"What if I could do something else, what could I do?"
-
-~getmd5.("Ciao md5, your hashes never met the ocean, yet your name bestows a library.")
-
-~getmd5.("That rock with your name");
-~getmd5.("Stifle seagulls still flap their wings");
-
-~stop.()
-
-Pdef.removeAll
-s.meter
-1429.98 / 60
-~strings
-~choir
-~bass
-
-"What if I could do something else, what could I do?"
-
-
-PdefAllGui(9);
-
-
-
-
-
-
 
 
 
@@ -381,3 +385,14 @@ SynthDef("flute", {
 }).add;
 
 )
+
+s.meter
+1429.98 / 60
+~strings
+~choir
+~bass
+
+"What if I could do something else, what could I do?"
+
+
+PdefAllGui(9);

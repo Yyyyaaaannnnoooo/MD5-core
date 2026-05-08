@@ -1,0 +1,31 @@
+[Unit]
+Description=Node.js in Screen Session
+After=network.target
+# Start after auto-login if needed
+After=getty@tty1.service
+
+[Service]
+Type=forking
+User=supercollider
+WorkingDirectory=/home/supercollider/node/server
+
+# Start Node.js in a detached screen session
+ExecStart=/usr/bin/screen -dmS node-app node index-rpi.js
+
+# Optional: Log screen output to file
+ExecStartPost=/bin/bash -c 'sleep 2 && screen -S node-app -X hardcopy /tmp/node-screen.log'
+
+# Clean shutdown
+ExecStop=/usr/bin/screen -S node-app -X quit
+
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+# Log to journal (screen manages its own output)
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

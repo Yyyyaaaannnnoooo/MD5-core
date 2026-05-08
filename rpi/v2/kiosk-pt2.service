@@ -1,0 +1,36 @@
+[Unit]
+Description=Artwork Display - Raw Node.js Output
+After=node-screen.service
+Wants=node-screen.service
+# Take over TTY1 completely
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+User=supercollider
+
+# Setup TFT screen
+Environment=TERM=linux
+Environment=COLUMNS=53
+Environment=LINES=20
+
+# Use TTY1 (primary console)
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+StandardInput=tty
+StandardOutput=tty
+StandardError=tty
+
+# Attach to the screen session and show it on TFT
+ExecStart=/bin/bash -c 'sleep 3 && exec screen -x node-app'
+
+# Kill getty if it's running
+ExecStartPre=-/usr/bin/systemctl stop getty@tty1
+ExecStartPre=/bin/sleep 2
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

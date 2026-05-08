@@ -1,0 +1,17 @@
+[Unit]
+Description=SuperCollider Server
+After=network.target node-app.service
+Wants=network.target
+
+[Service]
+Type=simple
+User=supercollider
+WorkingDirectory=/home/supercollider
+ExecStart=/usr/bin/sclang /home/supercollider/patches/md5-rpi-v2.scd
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

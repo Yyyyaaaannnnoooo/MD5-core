@@ -1,0 +1,25 @@
+[Unit]
+Description=Node.js Application
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=supercollider
+WorkingDirectory=/home/supercollider/node/server
+ExecStart=/usr/bin/node /home/supercollider/node/server/index-rpi.js
+Restart=always
+RestartSec=10
+StandardOutput=journal+console  # This sends output to both journal AND console
+StandardError=journal+console   # Same for errors
+TTYPath=/dev/tty1               # Output to first virtual terminal
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+Environment=NODE_ENV=production
+
+# For debugging, also log to file
+ExecStartPre=/bin/bash -c 'echo "[$(date)] Starting Node.js app" >> /tmp/node-startup.log'
+
+[Install]
+WantedBy=multi-user.target
