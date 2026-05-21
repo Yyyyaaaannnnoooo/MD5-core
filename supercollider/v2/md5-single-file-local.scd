@@ -1,6 +1,3 @@
-
-\symbol.asString
-
 (
 // Server.default.options.outDevice_("BlackHole 16ch");
 // s.reboot;
@@ -822,9 +819,9 @@ s.waitForBoot({
     var viola_input = input[(10..21)];
     var bass_input = input[(20..31)];
     // .wrapAt(input.size)
-    var violin_score = ~generate_from_contour.(violin_input.postln, ~notes, 1, 1, \violin);
-    var viola_score = ~generate_from_contour.(viola_input.postln, ~notes, 0, 1, \viola);
-    var bass_score = ~generate_from_contour.(bass_input.postln, ~notes, -1, 4, \bass);
+    var violin_score = ~generate_from_contour.(violin_input, ~notes, 1, 1, \violin);
+    var viola_score = ~generate_from_contour.(viola_input, ~notes, 0, 1, \viola);
+    var bass_score = ~generate_from_contour.(bass_input, ~notes, -1, 4, \bass);
     var midiNotes = violin_score[0];
     var durations = violin_score[1];
     var trigs1=[], trigs2=[], trigs3=[];
@@ -851,7 +848,7 @@ s.waitForBoot({
       ~stop.();
       6.wait;
       "~~~ Execute Composition ~~~".postln;
-      ~emit.("~~~ Composition is Playing ~~~");
+      ~emit.(">>> New Composition is Playing");
       ~play.(mutes);
       // ~play.(1);
     };
@@ -1170,6 +1167,7 @@ s.waitForBoot({
       var ch = 0;
       "~~~ PANIC MODE! ~~~".postln;
       ~emit_composition.("~~~ PANIC MODE! ~~~");
+      ~stop.();
       Pdef.removeAll;
     },
     path: '/panic');
@@ -1198,27 +1196,27 @@ s.waitForBoot({
 });
 
 )
-
-
-~mixer.set(\lpf1, 8000)
-// ~mixer.set(\lpf2, 11500)
-// ~mixer.set(\lpf3, 2000)
-~stop.()
-
-~cleanup.()
-
-
-~getmd5.("What if I could do something else?")
 //
-// this sounds incredibly good!
-~getmd5.("who am I? A dead algorithm?");
-~getmd5.("What if I could do something else, what could I do?")
-
-~getmd5.("Ciao md5, your hashes never met the ocean, yet your name bestows a library.")
-
-~getmd5.("That rock with your name");
-
-
-
-~getmd5.("Ciao");
-~getmd5.("Stifle seagulls still flap their wings. That rock with your name");
+//
+// ~mixer.set(\lpf1, 8000)
+// // ~mixer.set(\lpf2, 11500)
+// // ~mixer.set(\lpf3, 2000)
+// ~stop.()
+//
+// ~cleanup.()
+//
+//
+// ~getmd5.("What if I could do something else?")
+// //
+// // this sounds incredibly good!
+// ~getmd5.("who am I? A dead algorithm?");
+// ~getmd5.("What if I could do something else, what could I do?")
+//
+// ~getmd5.("Ciao md5, your hashes never met the ocean, yet your name bestows a library.")
+//
+// ~getmd5.("That rock with your name");
+//
+//
+//
+// ~getmd5.("Ciao");
+// ~getmd5.("Stifle seagulls still flap their wings. That rock with your name");

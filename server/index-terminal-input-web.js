@@ -47,6 +47,45 @@ class SimpleMD5Animator {
 // Initialize the simple animator
 const animator = new SimpleMD5Animator();
 
+const express = require('express');
+const { createServer } = require('node:http');
+const path = require('path')
+const { join } = require('node:path');
+const { Server } = require('socket.io');
+
+const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: ["http://127.0.0.1:3000","http://127.0.0.1:5500"]
+  }
+});
+
+
+app.use(express.static(path.join(__dirname, '..', 'client')));
+app.get('/', (req, res) => {
+  // res.sendFile(join(__dirname, 'index.html'));
+  const filePath = path.join(__dirname, '..', 'client', 'index.html');
+  res.sendFile(filePath);
+});
+
+io.on('connection', (socket) => {
+  console.log('CONNECTION');
+  socket.on("msg", msg => {
+    console.log(msg);
+    make_md5_hash(msg)
+  })
+  socket.on("panic", msg => {
+    console.log(msg, "PANICCCC");
+    send_panic()
+  })
+});
+
+
+server.listen(3000, () => {
+  console.log('server running at http://localhost:3000');
+});
+
 
 
 const osc = require("osc")
@@ -73,12 +112,14 @@ udpPort.on("message", function (oscMsg, timeTag, info) {
   let value = oscMsg["args"][0]["value"];
 
   if (oscMsg["address"] === "/play") {
+    io.emit("play", oscMsg["args"][0]["value"]);
     animator.log(value);
   } else if (oscMsg["address"] === "/composition") {
     value = value.replaceAll("[[", "");
     value = value.replaceAll("[", "\n");
     value = value.replaceAll("]", "");
-    animator.log_to_terminal(value);
+    // animator.log_to_terminal(value);
+    io.emit("composition", value)
   }
   else if (oscMsg["address"] === "/instrument") {
     const logger = value.split(" >>> ")
@@ -90,6 +131,7 @@ udpPort.on("message", function (oscMsg, timeTag, info) {
       msg += key + " >>> " + instruments[key] + " | "
     })
     animator.log_to_terminal(msg);
+    // console.log(msg);
   } else if (oscMsg["address"] === "/startup") {
     node_ready();
     animator.log(">>> CONNECTED WITH SUPERCOLLIDER");
@@ -157,7 +199,7 @@ function make_md5_hash(value) {
   // console.log(hex);
   // hex.unshift(midi_ch);
   // console.log(hex.length);
-  // io.emit("hash", md5);
+  io.emit("hash", md5);
 }
 
 function post_message(value) {
@@ -199,6 +241,7 @@ function node_ready() {
 
 
 function send_panic() {
+  console.log("send_panic message");
   udpPort.send({
     address: "/panic",
     args: { type: 's', value: 'PANIC!' }

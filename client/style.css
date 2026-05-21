@@ -60,13 +60,17 @@ body {
   width: 100%;
   margin: 1rem;
   /* height: max-content; */
-  height: calc(100vh - 180px - 4rem);
+  height: calc(100vh - 4rem);
   padding: 1rem;
-  background-color: #00000022;
+  background-color: #0000008f;
   overflow-y: scroll;
   backdrop-filter: blur(1.5px);
   font-size: 2rem;
   text-shadow: black 3px 3px 2px;
+}
+
+.hash{
+  display: none;
 }
 
 .text {

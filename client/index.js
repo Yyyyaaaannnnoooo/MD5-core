@@ -124,10 +124,11 @@ text.addEventListener("keydown", event => {
       highlight_bg();
       reset_display_hashing()
     }
-  } else if (event.key !== "Backspace" || event.keyCode !== 8) {
-    event.preventDefault();
-    type_story()
   }
+  //  else if (event.key !== "Backspace" || event.keyCode !== 8) {
+  //   event.preventDefault();
+  //   type_story()
+  // }
 })
 
 function type_story() {
@@ -143,27 +144,54 @@ function type_story() {
 
 }
 
-const panic = document.querySelector("#panic")
-panic.addEventListener("click", () => {
-  socket.emit("panic", "Panic")
-})
+// const panic = document.querySelector("#panic")
+// panic.addEventListener("click", () => {
+//   socket.emit("panic", "Panic")
+// })
 
+// console.log("listen to websocket!");
 let hash_msgs = []
+let current_hash = ""
 socket.on("hash", (msg) => {
+  console.log("HASH");
   console.log(msg);
   // hash.innerHTML += msg + "<br>"
   hash_msgs.push(msg);
+  current_hash = msg
 });
 
 socket.on("play", (msg) => {
   clearInterval(wait_interval)
   reset_display_hashing()
+  console.log("PLAY!");
   console.log(msg);
   let hash_txt = ""
   hash_msgs.forEach(item => {
     hash_txt += item + "<br>"
   })
-  hash.innerHTML = hash_txt
+  // hash.innerHTML = hash_txt
+  // update_render_text(hash_txt)
+  display_composition(current_hash, true);
+});
+
+socket.on("composition", (msg) => {
+  // console.log(msg);
+  const dict = {"Violin":1,"Viola":2,"Cello":3}
+  const instr = msg.split(" >>> ")[0]
+  const note = msg.split(" >>> ")[1]
+  // console.log(instr, dict[instr]);
+  display_composition(msg, false, dict[instr])
+  add_note(random(innerWidth), innerHeight, note)
+  // const list = JSON.parse(msg);
+  // console.log(list);
+  // clearInterval(wait_interval)
+  // reset_display_hashing()
+  // console.log(msg);
+  // let hash_txt = ""
+  // hash_msgs.forEach(item => {
+  //   hash_txt += item + "<br>"
+  // })
+  // hash.innerHTML = hash_txt
   // update_render_text(hash_txt)
 });
 
@@ -187,20 +215,7 @@ function display_composition_OLD(msg, inline = true, div = 0) {
   composition.scrollTop = composition.scrollHeight;
 }
 
-socket.on("composition", (msg) => {
-  display_composition(msg)
-  // const list = JSON.parse(msg);
-  // console.log(list);
-  // clearInterval(wait_interval)
-  // reset_display_hashing()
-  // console.log(msg);
-  // let hash_txt = ""
-  // hash_msgs.forEach(item => {
-  //   hash_txt += item + "<br>"
-  // })
-  // hash.innerHTML = hash_txt
-  // update_render_text(hash_txt)
-});
+
 
 const messages = document.querySelector(".messages")
 const ch1 = document.querySelector(".ch1")
@@ -210,6 +225,7 @@ let messages_txt = ""
 let ch1_txt = ""
 let ch2_txt = ""
 let ch3_txt = ""
+
 function display_composition(msg, inline = true, div = 0) {
   const maxLength = 15000;
   // console.log(msg);
