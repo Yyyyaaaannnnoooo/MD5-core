@@ -1,9 +1,13 @@
 MIDIClient.init;
-t = TempoClock.new(120/60).permanent_(true);
+t = TempoClock.new(127/60).permanent_(true);
 m = MIDIOut(0);
 // m = MIDIOut.newByName("Elektron Digitone", "Elektron Digitone");
-m = MIDIOut.newByName("iPad", "iPad");
-
+// m = MIDIOut.newByName("iPad", "iPad");
+m = MIDIOut.newByName("IAC Driver", "Bus 1");
+// MIDIClient.init;
+// t = TempoClock.new(80/60).permanent_(true);
+~mclock = MIDIClockOut.new("IAC Driver", "Bus 1", t);
+Server.killAll
 (
 // Server.default.options.outDevice_("BlackHole 16ch");
 // s.reboot;
@@ -66,8 +70,8 @@ s.waitForBoot({
 
 
   ~getmd5 = {
-    arg txt;
-    ~remote.sendMsg("/get", txt);
+    arg txt, ch=0, cc=0, drums=0, mod=0;
+    ~remote.sendMsg("/get", txt, ch, cc, drums, mod);
   };
 
   ~emit = {
@@ -184,44 +188,38 @@ s.waitForBoot({
       //   { \drone }
       // );
 
-      // textures = textures.add(
-      //   case
-      //   /*        { grad > 0.8 } { \melodic_fast }
-      //   { grad > 0.6 } { \melodic }*/
-      //   { grad > 0.5 } { \folk}
-      //   { \complex }
-      // );
+      textures = textures.add(
+        case
+        { grad > 0.9 } { \fast_arpeggio }
+        { grad > 0.7 } { \arpeggio }
+        { grad > 0.5 } { \melodic_long }
+        { grad > 0.4 } { \melodic_fast }
+        { grad > 0.3 } { \melodic }
+        { grad > 0.1 } { \folk}
+        { \complex }
+      );
 
-      case
-      {instrument == \violin} {
-        textures = textures.add(
-          case
-          { grad > 0.3 } { \complex }
-          { \drone }
-        );
-      }
-      {instrument == \viola} {
-        textures = textures.add(
-          case
-          { grad > 0.8 } { \melodic_fast }
-          { grad > 0.6 } { \melodic }
-          { grad > 0.3 } { \melodic_long }
-          { \drone }
-        );
-      }
-      {instrument == \bass} {
-        textures = textures.add(
-          case
-          { grad > 0.5 } { \melodic_long }
-          { \drone }
-        );
-      }
-
+      // case
+      // {instrument == \violin} {
+      //   textures = textures.add(\complex);
+      // }
+      // {instrument == \viola} {
+      //   textures = textures.add(
+      //     case
+      //     { grad > 0.8 } { \melodic_fast }
+      //     { grad > 0.6 } { \melodic }
+      //     { \melodic_long }
+      //   );
+      // }
+      // {instrument == \bass} {
+      //   textures = textures.add(\melodic_long );
+      // }
+      //
 
 
     };
 
-    textures.do({arg item,i;i.post; ": ".post; item.postln});
+    // textures.do({arg item,i;i.post; ": ".post; item.postln});
     // "CHORDS".postln;
     // chordIndices.postln;
     [chordIndices, textures, normGradients];
@@ -248,7 +246,8 @@ s.waitForBoot({
       var grad = if (i > 0) { gradients[i-1] } { 0 };
       var chordNames = chordProgressions[progIndex][chordIndex];
       var currChordProg = chordProgressions[progIndex];
-      var rest = input[i].linlin(0, 15, 2, 12);
+      // var rest = input[i].linlin(0, 15, 2, 12);
+      var rest = input[i] * 0.25;
       // "rest: ".post; rest.postln;
       // Convert current chord to MIDI
       currentChordMIDI = ~chord_to_midi.(chordNames, baseOctave);
@@ -572,7 +571,7 @@ s.waitForBoot({
     var baseNote;
     var halfNumNotes = numNotes / 2;
     var contour = [\ascend , \descend, \arch, \pendulum, \leaping].choose;
-    contour.postln;
+    // contour.postln;
     if(numNotes.isNumber.not) {
       ("ERROR: numNotes is not a number! It is: " ++ numNotes).postln;
       numNotes = 8; // Default fallback
@@ -820,7 +819,7 @@ s.waitForBoot({
   // Generate and play the composition
   ~createComposition = {
     // input, chordProgressions, baseOctave=0;
-    arg input;
+    arg input, ch=0;
     var violin_input = input[(0..10)];
     var viola_input = input[(10..21)];
     var bass_input = input[(20..31)];
@@ -848,13 +847,13 @@ s.waitForBoot({
     trigs3 = bass_score[1];
 
     n1 = violin_score[0];
-    n1.postln;
+    // n1.postln;
 
 
 
-    ~strings = ~make_midi_ptn.(0, violin_score[0], trigs1, input);
-    ~viola = ~make_midi_ptn.(1, viola_score[0], trigs2, input.rotate(2));
-    ~bass = ~make_midi_ptn.(2, bass_score[0], trigs3, input.rotate(4));
+    // ~strings = ~make_midi_ptn.(3, violin_score[0], trigs1, input);
+    ~viola = ~make_midi_ptn.(ch, viola_score[0], trigs2, input.rotate(2));
+    // ~bass = ~make_midi_ptn.(5, bass_score[0], trigs3, input.rotate(4));
     // ~strings = ~make_ptn2.(0, violin_score[0], trigs1, input);
     // ~viola = ~make_ptn2.(1, viola_score[0], trigs2, input.rotate(2));
     // ~bass = ~make_ptn2.(2, bass_score[0], trigs3, input.rotate(4));
@@ -863,11 +862,16 @@ s.waitForBoot({
       ~stop.();
       6.wait;
       "~~~ Execute Composition ~~~".postln;
-      ~emit.("~~~ Composition is Playing ~~~");
-      ~play.(mutes);
+      // ~emit.("~~~ Composition is Playing ~~~");
+      ~play.(1);
       // ~play.(1);
     };
 
+  };
+
+  ~generate_drums = {
+    arg input, ch;
+    "finish me!".postln;
   };
 
   ~play = {
@@ -983,7 +987,7 @@ s.waitForBoot({
     var pat_name = "string"++channel++name.asString;
     var bus = ~outs[channel];
     pat_name = pat_name.asSymbol;
-    pat_name.postln;
+    // pat_name.postln;
     Pdef(pat_name).clear;
     Pdef(pat_name, Pbind(
       \instrument,\saw,\group, ~synths,
@@ -1050,7 +1054,7 @@ s.waitForBoot({
       \midinote, patN,
       \dur, patD,
       \amp, patV, // velocity
-      \trace, Pfunc({
+/*      \trace, Pfunc({
         arg ev;
         var midi = ~midi_to_note.(ev[\midinote]);
         var inst = ~instruments[channel];
@@ -1058,7 +1062,7 @@ s.waitForBoot({
         {
           ~emit_composition.((inst ++ " >>> " ++ midi));
         }{"REST".postln;}
-      }),
+      }),*/
     ));
     Pdef(pat_name).quant_(1);
     Pdef(pat_name).fadeTime = 1.0;
@@ -1068,7 +1072,7 @@ s.waitForBoot({
     arg ch, notes, trigs, list;
     var v1 = list[(0..9)];
     var p1=nil, p2=nil, p3=nil;
-    notes.postln;
+    // notes.postln;
     v1 = ~make_velocities.(v1).linlin(0.8, 1, -40.dbamp, -30.dbamp);
     p1 = ~mpdef.(ch, "p1", ~mpseq.(notes), ~mpseq.(trigs), ~mpseq.(v1));
     [p1,p2,p3]
@@ -1212,17 +1216,30 @@ s.waitForBoot({
   // ~init_audio.();
   s.sync;
 
+  "init OSC".postln;
+
   OSCdef(
     key: \image,
     func: {
       arg msg, time, addr, recvPort;
-      var ch = 0;
-      msg.postln;
-      msg.removeAt(0);
+      var values = msg.removeAt(0);
+      var md5 = msg[0..31];
+      var ch = msg[32];
+      var cc_num = msg[33];
+      var is_drum = msg[34]==1;
+      var is_modulation = msg[35]==1;
+      // msg.postln;
+      // values.postln;
+      md5.postln;
+      ch.postln;
+      cc_num.postln;
+      is_drum.postln;
+      is_modulation.postln;
       "~~~ New Composition ~~~".postln;
       ~stop.();
       Pdef.removeAll;
-      ~createComposition.(msg)
+
+      ~createComposition.(md5, ch)
     },
     path: '/md5');
 
@@ -1242,6 +1259,7 @@ s.waitForBoot({
     func: {
       arg msg, time, addr, recvPort;
       var ch = 0;
+      msg.postln;
       // ~emit.("NODE >>> SUPERCOLLIDER. || CONNECTION DONE!");
       "NODE >>> SUPERCOLLIDER. || CONNECTION DONE!".postln;
       ~startup.stop;
@@ -1271,7 +1289,7 @@ s.waitForBoot({
 ~cleanup.()
 
 
-~getmd5.("What if I could do something else?")
+~getmd5.("What if I could do something else?", 0, 0, 0, 0)
 //
 // this sounds incredibly good!
 ~getmd5.("who am I? A dead algorithm?");

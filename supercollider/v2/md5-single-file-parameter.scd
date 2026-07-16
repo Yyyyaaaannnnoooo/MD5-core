@@ -1,6 +1,6 @@
 (
 // Server.default.options.outDevice_("BlackHole 16ch");
-// s.reboot;
+s.reboot;
 s.waitForBoot({
 
   ~remote = NetAddr("127.0.0.1", 57121);

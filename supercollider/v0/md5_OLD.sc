@@ -1,8 +1,8 @@
 MIDIClient.init;
 t = TempoClock.new(80/60).permanent_(true);
+~mclock = MIDIClockOut.new("IAC Driver", "Bus 1", t);
 // ~mclock = MIDIClockOut.new("AudioBox USB 96", "AudioBox USB 96", t);
 // m = MIDIOut(2);
-~mclock = MIDIClockOut.new("IAC Driver", "Bus 1", t);
 m = MIDIOut(0);
 m = MIDIOut.newByName("IAC Driver", "Bus 1");
 n = MIDIOut.newByName("IAC Driver", "Bus 2");

@@ -71,7 +71,8 @@ const udpPort = new osc.UDPPort({
 // Listen for incoming OSC messages.
 udpPort.on("message", function (oscMsg, timeTag, info) {
   let value = oscMsg["args"][0]["value"];
-  console.log(oscMsg["args"]);
+  const args = oscMsg["args"]
+  console.log(args);
 
   if (oscMsg["address"] === "/play") {
     animator.log(value);
@@ -100,7 +101,7 @@ udpPort.on("message", function (oscMsg, timeTag, info) {
     animator.log(">>> SUPERCOLLIDER CRASHED \n Waiting for reboot....");
     clearInterval(md5_interval);
   }else if (oscMsg["address"] === "/get") {
-    do_md5(value);
+    do_md5(value, args);
   }
 
 });
@@ -136,22 +137,22 @@ udpPort.on("ready", function () {
 let poem = ""
 let hashed_poem = ""
 
-function do_md5(value) {
+function do_md5(value, args) {
   poem = value
   console.log('\n');
   console.log(make_box(poem, "bold"));
-  make_md5_hash(value);
+  make_md5_hash(value, args);
 }
 
-function make_md5_hash(value) {
+function make_md5_hash(value, args) {
   const md5 = MD5(value);
-  const stopAnimation = animator.animateHashing(md5_parts);
+  // const stopAnimation = animator.animateHashing(md5_parts);
   setTimeout(() => {
     console.log('\n');
     console.log(make_box(md5, "rounded"));
-    stopAnimation();
+    // stopAnimation();
     const hex = hexToBytesWithBuffer(md5);
-    send_osc(hex);
+    send_osc(hex, args);
   }, 6000);
   hashed_poem = md5
   // poem.push(md5); 
@@ -184,11 +185,12 @@ function hexToBytesWithBuffer(hex) {
 }
 
 
-function send_osc(msg) {
+function send_osc(msg, args) {
   udpPort.send({
     address: "/md5",
-    args: make_message(msg)
+    args: make_message(msg, args)
   }, local_address, remote_port);
+  
 }
 
 
@@ -208,8 +210,9 @@ function send_panic() {
   });
 }
 
-function make_message(array) {
-  result = []
+function make_message(array, args) {
+  const result = []
+  
   for (let i = 0; i < array.length; i++) {
     const val = array[i];
     result.push({
@@ -217,6 +220,12 @@ function make_message(array) {
       value: val
     })
   }
+  for(let i = 1; i < args.length; i++){
+    const arg = args[i];
+    console.log(arg)
+    result.push(arg)
+  }
+  console.log(result);
   return result
 }
 

@@ -126,3 +126,4 @@ Each hash produces a unique musical piece that reflects the solemn nature of a f
 ### TO DO
 1. check line 333
 2. remove 'dura' from make_scores
+3. add drum composer to md5-drums-midi.scd line 872
