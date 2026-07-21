@@ -6,13 +6,8 @@ This is a Pico Live Coding environment based on the MD5 hashing algorithm. It ta
 
 > [Initially Developed for the Hack the Promise Festival](https://hackthepromise.org/festival-2025/programm/)
 
-## Current status
-
-the project is in development, focusing on two things: 
-- buidling a better melody generator
-- make it run on a raspberry pi
-
-The client input interface is currenttly broken, to favor terminal based interface. The terminal does not take text inputs at the moment.
+> [Screen recording of a Live performance](https://www.youtube.com/watch?v=r6_b08uaL90) at Unsorted Space (17.7.2026)
+> [Sound Installation](https://youtube.com/shorts/6bMdUpJVI-M)
 
 ### The Story of MD5
 
@@ -27,16 +22,6 @@ By transforming text into musical requiems, this work composes poetic farewells 
 
 
 
-
-### How it works
-
-
-
-### new built in strings
-
-> check line 427 and after to choose between sending midi or using internal synth
-
-
 ### Technical Architecture
 
 MD5 Core consists of three main components:
@@ -45,7 +30,7 @@ MD5 Core consists of three main components:
 
 2. MD5 Hashing: The input text is processed through the MD5 algorithm to generate a 128-bit hash
 
-3. MIDI Composition: The hash is sent via OSC protocol to SuperCollider, which generates a musical composition based on requiem chords. The resulting composition is served over MIDI
+3. MIDI Composition: The hash is sent via OSC protocol to SuperCollider, which generates a musical composition based on requiem chords. The resulting composition is served over MIDI, or used to generate [Pdef](https://doc.sccode.org/Classes/Pdef.html) sequences within SuperCollider to play [SynthDefs](https://doc.sccode.org/Classes/SynthDef.html)
 
 Each hash produces a unique musical piece that reflects the solemn nature of a funeral mass.
 
@@ -119,9 +104,6 @@ Each hash produces a unique musical piece that reflects the solemn nature of a f
 - C, E, G 
 - F, A, C 
 - G, B, D
-
-
-## Current upgrade to work scsynth instead of external synthesizer
 
 ### TO DO
 1. check line 333
